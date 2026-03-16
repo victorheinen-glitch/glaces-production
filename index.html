@@ -8,7 +8,7 @@
     :root{--bg:#0b1220;--card:#121b2f;--muted:#9bb0d0;--text:#e8eefc;--accent:#6ea8ff;--ok:#55d38b;--warn:#ffcc66;--bad:#ff6b6b;}
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;background:linear-gradient(180deg,#070b14,#0b1220);color:var(--text);}
     header{position:sticky;top:0;background:rgba(7,11,20,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.07)}
-    .wrap{max-width:1100px;margin:0 auto;padding:18px}
+    .wrap{max-width:1300px;margin:0 auto;padding:18px}
     nav{display:flex;gap:10px;flex-wrap:wrap}
     .tab{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.03);color:var(--text);cursor:pointer}
     .tab.active{border-color:rgba(110,168,255,.55);box-shadow:0 0 0 3px rgba(110,168,255,.12)}
@@ -18,23 +18,27 @@
     h1{font-size:18px;margin:0 0 8px}
     h2{font-size:14px;margin:0 0 10px;color:var(--muted);font-weight:600}
     label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-    input,select{width:100%;padding:10px 11px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.25);color:var(--text);outline:none}
+    input,select{width:100%;padding:10px 11px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.25);color:var(--text);outline:none;box-sizing:border-box}
     input:focus,select:focus{border-color:rgba(110,168,255,.55);box-shadow:0 0 0 3px rgba(110,168,255,.10)}
     button{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(110,168,255,.18);color:var(--text);cursor:pointer}
     button:hover{background:rgba(110,168,255,.24)}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .row4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
     table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:14px}
-    th,td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;font-size:13px}
+    th,td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;font-size:13px;vertical-align:top}
     th{color:var(--muted);font-weight:650}
     .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);color:var(--muted);font-size:12px}
     .right{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
     .note{font-size:12px;color:var(--muted);line-height:1.35}
-    .kpi{font-size:26px;font-weight:750}
-    .kpi small{font-size:12px;color:var(--muted);font-weight:600}
     .status{font-size:12px}
     .ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)}
     .hidden{display:none}
+    .mini-stack{display:grid;gap:6px}
+    .inline-grid{display:grid;grid-template-columns:1fr 140px;gap:6px}
+    .op-input{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .subhead{font-size:11px;color:var(--muted)}
+    .total-row td{font-weight:700;background:rgba(255,255,255,.03)}
   </style>
 </head>
 <body>
@@ -42,7 +46,6 @@
   <div class="wrap">
     <nav>
       <button class="tab active" data-page="parfums">Parfums</button>
-      <button class="tab" data-page="ventes">Ventes</button>
       <button class="tab" data-page="stock">Stock</button>
       <button class="tab" data-page="plan">Plan</button>
       <span class="pill" id="rtPill">● Temps réel: <b id="rtState">…</b></span>
@@ -51,57 +54,66 @@
 </header>
 
 <main class="wrap">
-  <!-- CONFIG -->
-  <div class="card">
-    <h1>Configuration</h1>
-    <div class="row">
-      <div>
-        <label>Objectif couverture (semaines)</label>
-        <input id="coverageWeeks" type="number" step="0.1" value="1.0">
-      </div>
-      <div>
-        <label>Batch journée (L mix)</label>
-        <input id="dailyBatchMix" type="number" step="1" value="60">
-      </div>
-    </div>
-    <div class="row">
-      <div>
-        <label>Capacité distributeur (pots 1L)</label>
-        <input id="capDist" type="number" value="72">
-      </div>
-      <div>
-        <label>Capacité réserve (L)</label>
-        <input id="capReserve" type="number" step="1" value="150">
-      </div>
-    </div>
-    <p class="note">Règle prod : min <b>10 L</b> de mix, puis par pas de <b>5 L</b>. Les calculs utilisent le rendement “L finale / 10 L mix”.</p>
-  </div>
-
-  <!-- PAGES -->
   <section id="page-parfums" class="grid two" style="margin-top:14px">
     <div class="card">
       <h1>Ajouter / modifier un parfum</h1>
+
       <div class="row">
         <div>
           <label>Nom</label>
           <input id="fName" placeholder="ex: Vanille">
         </div>
         <div>
+          <label>Type</label>
+          <select id="fType">
+            <option value="glace">Glace</option>
+            <option value="sorbet">Sorbet</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
           <label>Rendement (L finale / 10L mix)</label>
           <input id="fYield" type="number" step="0.1" value="13.0">
         </div>
-      </div>
-      <div class="row">
         <div>
           <label>Priorité (petit = plus prioritaire)</label>
           <input id="fPriority" type="number" value="100">
         </div>
-        <div style="display:flex;align-items:end;gap:10px">
+      </div>
+
+      <div class="row4">
+        <div>
+          <label>Objectif stock - Pots 1L</label>
+          <input id="fTargetPots" type="number" min="0" step="1" value="0">
+        </div>
+        <div>
+          <label>Objectif stock - Bacs</label>
+          <input id="fTargetBacs" type="number" min="0" step="1" value="0">
+        </div>
+        <div>
+          <label>Type de bacs</label>
+          <select id="fTargetBacType">
+            <option value="grand">Grand (5L)</option>
+            <option value="petit">Petit (2.5L)</option>
+          </select>
+        </div>
+        <div>
+          <label>Objectif stock - BAE</label>
+          <input id="fTargetBae" type="number" min="0" step="1" value="0">
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <div></div>
+        <div style="display:flex;align-items:end;gap:10px;justify-content:flex-end">
           <button id="saveFlavor">Enregistrer</button>
           <button id="reloadAll">Recharger</button>
         </div>
       </div>
-      <p class="note">Astuce : mets tes best-sellers avec une priorité plus basse (ex: 10) pour qu’ils soient servis en premier dans le plan si tu es limité à 60 L.</p>
+
+      <p class="note">Les objectifs de stock saisis ici sont repris automatiquement dans l’onglet plan.</p>
     </div>
 
     <div class="card">
@@ -110,84 +122,59 @@
     </div>
   </section>
 
-  <section id="page-ventes" class="grid two hidden" style="margin-top:14px">
-    <div class="card">
-      <h1>Ventes (N-1)</h1>
-      <div class="row">
-        <div>
-          <label>Semaine (date début)</label>
-          <input id="weekStart" type="date">
-        </div>
-        <div class="right" style="align-items:end">
-          <button id="saveSales">Enregistrer ventes</button>
-        </div>
-      </div>
-      <div id="salesTable"></div>
-      <p class="note">N-1 = semaine qui vient de se terminer. Tu peux aussi remplir plusieurs semaines (N-2, N-3…) pour faire des moyennes plus tard.</p>
-    </div>
-
-    <div class="card">
-      <h1>Historique</h1>
-      <div id="salesHistory"></div>
-    </div>
-  </section>
-
-  <section id="page-stock" class="grid two hidden" style="margin-top:14px">
+  <section id="page-stock" class="grid hidden" style="margin-top:14px">
     <div class="card">
       <h1>Stock (temps réel)</h1>
       <div id="stockTable"></div>
       <div class="right" style="margin-top:10px">
         <button id="saveStock">Sauvegarder stock</button>
       </div>
-      <p class="note">Ce tableau est synchronisé : si quelqu’un modifie et sauvegarde, les autres voient les chiffres.</p>
-    </div>
-
-    <div class="card">
-      <h1>Résumé capacité</h1>
-      <div class="row">
-        <div>
-          <div class="kpi" id="kpiDist">— <small>pots distributeur</small></div>
-          <div class="status" id="distStatus"></div>
-        </div>
-        <div>
-          <div class="kpi" id="kpiReserve">— <small>L réserve</small></div>
-          <div class="status" id="reserveStatus"></div>
-        </div>
-      </div>
-      <p class="note">Le distributeur max = 72 pots. Réserve max = 150 L.</p>
+      <p class="note">Dans Réserve distributeur (L) et Réserve Delhaize (L), tu peux soit saisir directement le chiffre, soit entrer une opération simple comme +13 ou -5. Le calcul s’applique immédiatement à l’écran.</p>
     </div>
   </section>
 
-  <section id="page-plan" class="grid" style="margin-top:14px; display:none">
+  <section id="page-plan" class="grid hidden" style="margin-top:14px">
+    <div class="card">
+      <h1>Configuration</h1>
+      <div class="row">
+        <div>
+          <label>Objectif couverture (semaines)</label>
+          <input id="coverageWeeks" type="number" step="0.1" value="1.0">
+        </div>
+        <div>
+          <label>Batch journée (L mix)</label>
+          <input id="dailyBatchMix" type="number" step="1" value="60">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Capacité stockage (pots 1L)</label>
+          <input id="capDist" type="number" value="72">
+        </div>
+        <div>
+          <label>Capacité stockage (bacs)</label>
+          <input id="capBacs" type="number" value="30">
+        </div>
+      </div>
+      <p class="note">Les bacs sont comptés en nombre de bacs. Grand = 5L, petit = 2.5L. Un BAE = 2.5L.</p>
+    </div>
+
     <div class="card">
       <h1>Plan de production (suggestion)</h1>
       <div class="row3">
-        <div>
-          <label>Semaine de référence ventes (N-1)</label>
-          <input id="planWeekStart" type="date">
-        </div>
-        <div>
-          <label>Méthode demande</label>
-          <select id="demandMethod">
-            <option value="last">Dernière semaine (N-1)</option>
-            <option value="avg4">Moyenne 4 semaines (N-1..N-4)</option>
-          </select>
-        </div>
+        <div></div>
         <div>
           <label>Facteur tendance (ex: 1.10)</label>
           <input id="trendFactor" type="number" step="0.01" value="1.00">
         </div>
-      </div>
-
-      <div class="right" style="margin-top:10px">
-        <button id="computePlan">Calculer</button>
+        <div class="right" style="align-items:end">
+          <button id="computePlan">Calculer</button>
+        </div>
       </div>
 
       <div id="planTable" style="margin-top:12px"></div>
       <p class="note">
-        Logique : objectif = (demande hebdo × couverture) + marge (0 ici) − stock (distributeur + réserve convertie en L).  
-        Puis conversion en L de mix via rendement, arrondi à 10L min puis pas de 5L.  
-        Si total mix dépasse 60L, on sert par priorité (puis ordre).
+        Logique : production = (objectif de stock − stocks) + marge (0 ici). La base est calculée via le rendement, puis arrondie au multiple de 5 supérieur. Les parfums sont affichés par ordre de priorité.
       </p>
     </div>
   </section>
@@ -196,19 +183,19 @@
 <script type="module">
   import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-  // 1) CONFIGURE ICI
   const SUPABASE_URL = "https://gpysazxtguhuelrwgwhk.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdweXNhenh0Z3VodWVscndnd2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0NjkyMzksImV4cCI6MjA4MjA0NTIzOX0.LtgX4K81vS_pBprPcQ5zMEtygg9V9jHHxx1f-w08kTM";
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // UI routing
+  const BAE_VOLUME_L = 2.5;
+
   const tabs = [...document.querySelectorAll(".tab")];
   const pages = {
     parfums: document.getElementById("page-parfums"),
-    ventes: document.getElementById("page-ventes"),
     stock: document.getElementById("page-stock"),
     plan: document.getElementById("page-plan")
   };
+
   function show(page){
     tabs.forEach(t=>t.classList.toggle("active", t.dataset.page===page));
     Object.entries(pages).forEach(([k,el])=>{
@@ -219,155 +206,210 @@
   }
   tabs.forEach(t=>t.addEventListener("click", ()=>show(t.dataset.page)));
 
-  // Helpers
   const $ = (id)=>document.getElementById(id);
-  const roundTo5 = (x)=>Math.ceil(x/5)*5;
-  const applyMin10 = (x)=> x<=0 ? 0 : (x<10 ? 10 : roundTo5(x));
   const toNum = (v)=> (v===""||v==null) ? 0 : Number(v);
+  const ceilTo5 = (x)=> x <= 0 ? 0 : Math.ceil(x / 5) * 5;
 
-  // State
+  function parseMathUpdate(expr, currentValue){
+    const raw = String(expr ?? "").trim().replace(",", ".");
+    if(raw === "") return currentValue;
+    if(/^[+-]\d+(\.\d+)?$/.test(raw)) return currentValue + Number(raw);
+    if(/^\d+(\.\d+)?$/.test(raw)) return Number(raw);
+    return currentValue;
+  }
+
+  function bacTypeLabel(type){
+    return type === "petit" ? "Petit (2.5L)" : "Grand (5L)";
+  }
+
+  function bacVolume(type){
+    return type === "petit" ? 2.5 : 5;
+  }
+
+  function capFirst(str){
+    const s = String(str || "");
+    return s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+  }
+
+  function safeFlavor(row){
+    return {
+      name: row.name,
+      yield_l_per_10l: toNum(row.yield_l_per_10l) || 13,
+      priority: parseInt(row.priority ?? 100, 10),
+      enabled: row.enabled ?? true,
+      flavor_type: row.flavor_type || "glace",
+      target_pots_1l: toNum(row.target_pots_1l),
+      target_bacs: toNum(row.target_bacs),
+      target_bac_type: row.target_bac_type || "grand",
+      target_bae: toNum(row.target_bae)
+    };
+  }
+
+  function safeStock(row){
+    return {
+      flavor_name: row.flavor_name,
+      distributor_l: toNum(row.distributor_l),
+      delhaize_l: toNum(row.delhaize_l),
+      reserve_bacs_count: toNum(row.reserve_bacs_count),
+      reserve_bacs_type: row.reserve_bacs_type || "grand",
+      reserve_bae_count: toNum(row.reserve_bae_count),
+      updated_at: row.updated_at || null
+    };
+  }
+
   let flavors = [];
   let stock = [];
-  let sales = [];
 
-  // Realtime indicator
   const rtState = $("rtState");
-  const rtPill = $("rtPill");
   function setRT(ok){
     rtState.textContent = ok ? "ON" : "OFF";
     rtState.className = ok ? "ok" : "bad";
   }
   setRT(false);
 
-  // Loaders
   async function loadFlavors(){
-    const { data, error } = await supabase.from("flavors").select("*").order("priority",{ascending:true}).order("name",{ascending:true});
+    const { data, error } = await supabase
+      .from("flavors")
+      .select("*")
+      .order("priority",{ascending:true})
+      .order("name",{ascending:true});
     if(error) throw error;
-    flavors = data ?? [];
+    flavors = (data ?? []).map(safeFlavor);
     renderFlavors();
-    renderSalesEntry();
     renderStockEntry();
   }
 
   async function loadStock(){
-    const { data, error } = await supabase.from("stock").select("*").order("flavor_name",{ascending:true});
+    const { data, error } = await supabase
+      .from("stock")
+      .select("*")
+      .order("flavor_name",{ascending:true});
     if(error) throw error;
-    stock = data ?? [];
+    stock = (data ?? []).map(safeStock);
     renderStockEntry();
-    renderCapacityKPIs();
   }
 
-  async function loadSalesHistory(limit=50){
-    const { data, error } = await supabase.from("sales_week").select("*").order("week_start",{ascending:false}).limit(limit);
-    if(error) throw error;
-    sales = data ?? [];
-    renderSalesHistory();
-  }
-
-  // Render flavors
   function renderFlavors(){
     const rows = flavors.map(f=>`
       <tr>
         <td>${f.name}</td>
+        <td>${capFirst(f.flavor_type)}</td>
         <td>${Number(f.yield_l_per_10l).toFixed(1)}</td>
         <td>${f.priority}</td>
+        <td>${f.target_pots_1l}</td>
+        <td>${f.target_bacs} <span class="subhead">(${bacTypeLabel(f.target_bac_type)})</span></td>
+        <td>${f.target_bae}</td>
         <td>${f.enabled ? "Oui":"Non"}</td>
       </tr>`).join("");
+
     $("flavorTable").innerHTML = `
       <table>
-        <thead><tr><th>Parfum</th><th>Rendement</th><th>Priorité</th><th>Actif</th></tr></thead>
-        <tbody>${rows || `<tr><td colspan="4">Aucun parfum</td></tr>`}</tbody>
+        <thead>
+          <tr>
+            <th rowspan="2">Parfum</th>
+            <th rowspan="2">Glace / sorbet</th>
+            <th rowspan="2">Rendement</th>
+            <th rowspan="2">Priorité</th>
+            <th colspan="3">Objectif de stock</th>
+            <th rowspan="2">Actif</th>
+          </tr>
+          <tr>
+            <th>Pots 1L</th>
+            <th>Bacs</th>
+            <th>BAE</th>
+          </tr>
+        </thead>
+        <tbody>${rows || `<tr><td colspan="8">Aucun parfum</td></tr>`}</tbody>
       </table>`;
   }
 
-  // Save flavor (upsert by name)
   $("saveFlavor").addEventListener("click", async ()=>{
     const name = $("fName").value.trim();
     const y = toNum($("fYield").value);
     const p = parseInt($("fPriority").value || "100",10);
+    const flavor_type = $("fType").value;
+    const target_pots_1l = parseInt($("fTargetPots").value || "0", 10);
+    const target_bacs = parseInt($("fTargetBacs").value || "0", 10);
+    const target_bac_type = $("fTargetBacType").value;
+    const target_bae = parseInt($("fTargetBae").value || "0", 10);
+
     if(!name){ alert("Nom requis"); return; }
 
     const { error } = await supabase.from("flavors").upsert({
-      name, yield_l_per_10l: y, priority: p, enabled:true
+      name,
+      yield_l_per_10l: y,
+      priority: p,
+      enabled: true,
+      flavor_type,
+      target_pots_1l,
+      target_bacs,
+      target_bac_type,
+      target_bae
     }, { onConflict:"name" });
 
     if(error){ alert(error.message); return; }
+
     $("fName").value = "";
+    $("fType").value = "glace";
+    $("fYield").value = "13.0";
+    $("fPriority").value = "100";
+    $("fTargetPots").value = "0";
+    $("fTargetBacs").value = "0";
+    $("fTargetBacType").value = "grand";
+    $("fTargetBae").value = "0";
+
     await loadFlavors();
   });
 
   $("reloadAll").addEventListener("click", async ()=>{
-    await Promise.all([loadFlavors(), loadStock(), loadSalesHistory()]);
+    await Promise.all([loadFlavors(), loadStock()]);
   });
 
-  // Sales entry
-  function renderSalesEntry(){
-    const ws = $("weekStart");
-    if(!ws.value){
-      const d = new Date(); // today
-      // set to Monday of current week for convenience
-      const day = d.getDay(); // 0 Sun .. 6 Sat
-      const diff = (day===0 ? -6 : 1-day);
-      d.setDate(d.getDate()+diff);
-      ws.value = d.toISOString().slice(0,10);
-    }
-
-    const rows = flavors.map(f=>`
-      <tr>
-        <td>${f.name}</td>
-        <td><input data-sale="${f.name}" type="number" min="0" value="0" /></td>
-      </tr>`).join("");
-
-    $("salesTable").innerHTML = `
-      <table>
-        <thead><tr><th>Parfum</th><th>Ventes (pots 1L)</th></tr></thead>
-        <tbody>${rows || `<tr><td colspan="2">Ajoute des parfums d’abord</td></tr>`}</tbody>
-      </table>`;
-  }
-
-  $("saveSales").addEventListener("click", async ()=>{
-    const week_start = $("weekStart").value;
-    if(!week_start){ alert("Date semaine requise"); return; }
-    const inputs = [...document.querySelectorAll("[data-sale]")];
-
-    const payload = inputs.map(inp=>({
-      week_start,
-      flavor_name: inp.dataset.sale,
-      pots: parseInt(inp.value || "0",10)
-    }));
-
-    const { error } = await supabase.from("sales_week").upsert(payload, { onConflict:"week_start,flavor_name" });
-    if(error){ alert(error.message); return; }
-    await loadSalesHistory();
-    alert("Ventes enregistrées.");
-  });
-
-  function renderSalesHistory(){
-    // show last weeks grouped
-    const map = new Map();
-    for(const s of sales){
-      if(!map.has(s.week_start)) map.set(s.week_start, []);
-      map.get(s.week_start).push(s);
-    }
-    let html = "";
-    for(const [week, items] of map.entries()){
-      const rows = items.sort((a,b)=>a.flavor_name.localeCompare(b.flavor_name))
-        .map(i=>`<tr><td>${i.flavor_name}</td><td>${i.pots}</td></tr>`).join("");
-      html += `
-        <div class="card" style="margin-bottom:12px">
-          <h2>Semaine du ${week}</h2>
-          <table><thead><tr><th>Parfum</th><th>Pots</th></tr></thead><tbody>${rows}</tbody></table>
-        </div>`;
-    }
-    $("salesHistory").innerHTML = html || `<p class="note">Aucune vente enregistrée.</p>`;
-  }
-
-  // Stock entry
   function ensureStockRows(){
-    const byName = new Map(stock.map(s=>[s.flavor_name,s]));
+    const byName = new Map(stock.map(s=>[s.flavor_name, s]));
     return flavors.map(f=>{
-      const s = byName.get(f.name) || { flavor_name:f.name, distributor_pots:0, reserve_l:0 };
-      return s;
+      const s = byName.get(f.name) || {
+        flavor_name: f.name,
+        distributor_l: 0,
+        delhaize_l: 0,
+        reserve_bacs_count: 0,
+        reserve_bacs_type: "grand",
+        reserve_bae_count: 0
+      };
+      return safeStock(s);
+    });
+  }
+
+  function applyStockOperation(flavorName, field){
+    const directInput = document.querySelector(`[data-stock-${field}="${flavorName}"]`);
+    const opInput = document.querySelector(`[data-stock-${field}-op="${flavorName}"]`);
+    if(!directInput || !opInput) return;
+
+    const expr = opInput.value.trim();
+    if(!expr) return;
+
+    const currentValue = toNum(directInput.value);
+    const nextValue = parseMathUpdate(expr, currentValue);
+    if(nextValue !== currentValue){
+      directInput.value = Math.max(0, nextValue);
+      opInput.value = "";
+    }
+  }
+
+  function bindStockInstantOperations(){
+    ["dist", "del"].forEach(field=>{
+      document.querySelectorAll(`[data-stock-${field}-op]`).forEach(input=>{
+        input.addEventListener("keydown", (e)=>{
+          if(e.key === "Enter"){
+            e.preventDefault();
+            applyStockOperation(input.dataset[`stock${field.charAt(0).toUpperCase()+field.slice(1)}Op`], field);
+          }
+        });
+
+        input.addEventListener("blur", ()=>{
+          applyStockOperation(input.dataset[`stock${field.charAt(0).toUpperCase()+field.slice(1)}Op`], field);
+        });
+      });
     });
   }
 
@@ -375,157 +417,228 @@
     const rows = ensureStockRows().map(s=>`
       <tr>
         <td>${s.flavor_name}</td>
-        <td><input data-stock-dist="${s.flavor_name}" type="number" min="0" value="${toNum(s.distributor_pots)}"></td>
-        <td><input data-stock-res="${s.flavor_name}" type="number" min="0" step="0.1" value="${toNum(s.reserve_l)}"></td>
+
+        <td>
+          <div class="mini-stack">
+            <input data-stock-dist="${s.flavor_name}" type="number" step="0.1" value="${toNum(s.distributor_l)}">
+            <input data-stock-dist-op="${s.flavor_name}" class="op-input" type="text" placeholder="+13 / -5">
+          </div>
+        </td>
+
+        <td>
+          <div class="mini-stack">
+            <input data-stock-del="${s.flavor_name}" type="number" step="0.1" value="${toNum(s.delhaize_l)}">
+            <input data-stock-del-op="${s.flavor_name}" class="op-input" type="text" placeholder="+13 / -5">
+          </div>
+        </td>
+
+        <td>
+          <div class="inline-grid">
+            <input data-stock-bacs="${s.flavor_name}" type="number" min="0" step="1" value="${toNum(s.reserve_bacs_count)}">
+            <select data-stock-bacs-type="${s.flavor_name}">
+              <option value="grand" ${s.reserve_bacs_type === "grand" ? "selected" : ""}>Grand (5L)</option>
+              <option value="petit" ${s.reserve_bacs_type === "petit" ? "selected" : ""}>Petit (2.5L)</option>
+            </select>
+          </div>
+        </td>
+
+        <td>
+          <input data-stock-bae="${s.flavor_name}" type="number" min="0" step="1" value="${toNum(s.reserve_bae_count)}">
+        </td>
       </tr>`).join("");
+
     $("stockTable").innerHTML = `
       <table>
-        <thead><tr><th>Parfum</th><th>Distributeur (pots)</th><th>Réserve (L)</th></tr></thead>
-        <tbody>${rows || `<tr><td colspan="3">Ajoute des parfums d’abord</td></tr>`}</tbody>
+        <thead>
+          <tr>
+            <th>Parfum</th>
+            <th>Réserve distributeur (L)</th>
+            <th>Réserve Delhaize (L)</th>
+            <th>Réserve (bacs)</th>
+            <th>Réserve (BAE)</th>
+          </tr>
+        </thead>
+        <tbody>${rows || `<tr><td colspan="5">Ajoute des parfums d’abord</td></tr>`}</tbody>
       </table>`;
+
+    bindStockInstantOperations();
   }
 
   $("saveStock").addEventListener("click", async ()=>{
-    const distInputs = [...document.querySelectorAll("[data-stock-dist]")];
-    const resInputs  = [...document.querySelectorAll("[data-stock-res]")];
-    const distMap = new Map(distInputs.map(i=>[i.dataset.stockDist, parseInt(i.value||"0",10)]));
-    const resMap  = new Map(resInputs.map(i=>[i.dataset.stockRes,  toNum(i.value)]));
+    const currentRows = ensureStockRows();
 
-    const payload = flavors.map(f=>({
-      flavor_name: f.name,
-      distributor_pots: distMap.get(f.name) ?? 0,
-      reserve_l: resMap.get(f.name) ?? 0,
-      updated_at: new Date().toISOString()
-    }));
+    const distInputs = [...document.querySelectorAll("[data-stock-dist]")];
+    const delInputs = [...document.querySelectorAll("[data-stock-del]")];
+    const bacsInputs = new Map([...document.querySelectorAll("[data-stock-bacs]")].map(i=>[i.dataset.stockBacs, i.value]));
+    const bacsTypes = new Map([...document.querySelectorAll("[data-stock-bacs-type]")].map(i=>[i.dataset.stockBacsType, i.value]));
+    const baeInputs = new Map([...document.querySelectorAll("[data-stock-bae]")].map(i=>[i.dataset.stockBae, i.value]));
+
+    const payload = flavors.map(f=>{
+      const current = currentRows.find(s=>s.flavor_name === f.name) || safeStock({ flavor_name: f.name });
+
+      const distributor_l = Math.max(0, toNum(distInputs.find(i=>i.dataset.stockDist === f.name)?.value ?? current.distributor_l));
+      const delhaize_l = Math.max(0, toNum(delInputs.find(i=>i.dataset.stockDel === f.name)?.value ?? current.delhaize_l));
+
+      return {
+        flavor_name: f.name,
+        distributor_l,
+        delhaize_l,
+        reserve_bacs_count: Math.max(0, parseInt(bacsInputs.get(f.name) || "0", 10)),
+        reserve_bacs_type: bacsTypes.get(f.name) || "grand",
+        reserve_bae_count: Math.max(0, parseInt(baeInputs.get(f.name) || "0", 10)),
+        updated_at: new Date().toISOString()
+      };
+    });
 
     const { error } = await supabase.from("stock").upsert(payload, { onConflict:"flavor_name" });
-    if(error){ alert(error.message); return; }
+
+    if(error){
+      if(String(error.message || "").includes("delhaize_l")){
+        alert("La colonne delhaize_l n’existe pas encore dans Supabase. Exécute le script SQL d’ajout des colonnes dans la table stock, puis recharge la page.");
+        return;
+      }
+      alert(error.message);
+      return;
+    }
+
+    await loadStock();
     alert("Stock sauvegardé.");
   });
 
-  function renderCapacityKPIs(){
-    const capDist = toNum($("capDist").value);
-    const capReserve = toNum($("capReserve").value);
+  function computePlanRows(trend, coverage){
+    const stockByName = new Map(stock.map(s=>[s.flavor_name, s]));
 
-    const rows = ensureStockRows();
-    const totalDist = rows.reduce((a,r)=>a+toNum(r.distributor_pots),0);
-    const totalRes = rows.reduce((a,r)=>a+toNum(r.reserve_l),0);
+    return flavors
+      .filter(f => f.enabled)
+      .map(f=>{
+        const s = stockByName.get(f.name) || safeStock({ flavor_name: f.name });
 
-    $("kpiDist").innerHTML = `${totalDist} <small>pots distributeur</small>`;
-    $("kpiReserve").innerHTML = `${totalRes.toFixed(1)} <small>L réserve</small>`;
+        const objectivePots = toNum(f.target_pots_1l) * trend * coverage;
+        const objectiveBacs = toNum(f.target_bacs) * trend * coverage;
+        const objectiveBae = toNum(f.target_bae) * trend * coverage;
 
-    const distOk = totalDist <= capDist;
-    const resOk = totalRes <= capReserve;
+        const stockPots = toNum(s.distributor_l) + toNum(s.delhaize_l);
+        const stockBacs = toNum(s.reserve_bacs_count);
+        const stockBae = toNum(s.reserve_bae_count);
 
-    $("distStatus").innerHTML = distOk ? `<span class="ok">OK</span> (${capDist} max)` : `<span class="bad">Dépassement</span> (${capDist} max)`;
-    $("reserveStatus").innerHTML = resOk ? `<span class="ok">OK</span> (${capReserve} max)` : `<span class="bad">Dépassement</span> (${capReserve} max)`;
+        const needPots = Math.max(0, objectivePots - stockPots);
+        const needBacs = Math.max(0, objectiveBacs - stockBacs);
+        const needBae = Math.max(0, objectiveBae - stockBae);
+
+        const plannedLiters =
+          (needPots * 1) +
+          (needBacs * bacVolume(f.target_bac_type)) +
+          (needBae * BAE_VOLUME_L);
+
+        const baseNeededRaw = plannedLiters <= 0 ? 0 : (plannedLiters * 10) / toNum(f.yield_l_per_10l);
+        const baseNeededRounded = ceilTo5(baseNeededRaw);
+
+        return {
+          name: f.name,
+          type: f.flavor_type,
+          priority: f.priority,
+          objective_pots: objectivePots,
+          objective_bacs: objectiveBacs,
+          objective_bae: objectiveBae,
+          need_pots: needPots,
+          need_bacs: needBacs,
+          need_bae: needBae,
+          planned_l: plannedLiters,
+          base_l: baseNeededRounded
+        };
+      });
   }
 
-  ["capDist","capReserve"].forEach(id=>$(id).addEventListener("input", renderCapacityKPIs));
-
-  // Plan compute
-  async function getDemandForWeek(weekStart, method){
-    // Return map flavor_name -> pots/week
-    if(method === "last"){
-      const { data, error } = await supabase.from("sales_week").select("*").eq("week_start", weekStart);
-      if(error) throw error;
-      const m = new Map();
-      (data||[]).forEach(r=>m.set(r.flavor_name, r.pots));
-      return m;
-    }
-    // avg4: weekStart, weekStart-7, -14, -21
-    const ws = new Date(weekStart);
-    const dates = [0,7,14,21].map(k=>{
-      const d = new Date(ws);
-      d.setDate(d.getDate()-k);
-      return d.toISOString().slice(0,10);
+  function totalsFor(rows){
+    return rows.reduce((acc, r)=>{
+      acc.objective_pots += r.objective_pots;
+      acc.objective_bacs += r.objective_bacs;
+      acc.objective_bae += r.objective_bae;
+      acc.need_pots += r.need_pots;
+      acc.need_bacs += r.need_bacs;
+      acc.need_bae += r.need_bae;
+      acc.planned_l += r.planned_l;
+      acc.base_l += r.base_l;
+      return acc;
+    }, {
+      objective_pots:0, objective_bacs:0, objective_bae:0,
+      need_pots:0, need_bacs:0, need_bae:0,
+      planned_l:0, base_l:0
     });
+  }
 
-    const { data, error } = await supabase.from("sales_week").select("*").in("week_start", dates);
-    if(error) throw error;
-
-    const sums = new Map();
-    const counts = new Map();
-    for(const r of (data||[])){
-      sums.set(r.flavor_name, (sums.get(r.flavor_name)||0) + r.pots);
-      counts.set(r.flavor_name, (counts.get(r.flavor_name)||0) + 1);
-    }
-    const avg = new Map();
-    for(const f of flavors){
-      const c = counts.get(f.name)||0;
-      const s = sums.get(f.name)||0;
-      avg.set(f.name, c===0 ? 0 : s/c);
-    }
-    return avg;
+  function renderTotalRow(label, totals){
+    return `
+      <tr class="total-row">
+        <td>${label}</td>
+        <td>${totals.objective_pots.toFixed(1)}</td>
+        <td>${totals.objective_bacs.toFixed(1)}</td>
+        <td>${totals.objective_bae.toFixed(1)}</td>
+        <td>${totals.need_pots.toFixed(1)}</td>
+        <td>${totals.need_bacs.toFixed(1)}</td>
+        <td>${totals.need_bae.toFixed(1)}</td>
+        <td>${totals.planned_l.toFixed(1)}</td>
+        <td>${totals.base_l.toFixed(0)}</td>
+      </tr>`;
   }
 
   $("computePlan").addEventListener("click", async ()=>{
     try{
-      const weekStart = $("planWeekStart").value;
-      if(!weekStart){ alert("Choisis une semaine N-1"); return; }
+      const trend = toNum($("trendFactor").value) || 1;
+      const coverage = toNum($("coverageWeeks").value) || 1;
 
-      const coverage = toNum($("coverageWeeks").value);
-      const trend = toNum($("trendFactor").value);
-      const method = $("demandMethod").value;
-      const dailyBatch = toNum($("dailyBatchMix").value);
+      const rows = computePlanRows(trend, coverage)
+        .sort((a,b)=>a.priority-b.priority || a.name.localeCompare(b.name));
 
-      const demand = await getDemandForWeek(weekStart, method);
-      // Stock maps
-      const byName = new Map(stock.map(s=>[s.flavor_name, s]));
-      // Compute needs
-      const rows = flavors.map(f=>{
-        const dPots = (demand.get(f.name) || 0) * coverage * trend; // pots ~= L (1 pot = 1L)
-        const st = byName.get(f.name) || { distributor_pots:0, reserve_l:0 };
-        const stockL = toNum(st.distributor_pots) + toNum(st.reserve_l);
-        const needLFinal = Math.max(0, dPots - stockL);
-        const y = toNum(f.yield_l_per_10l) || 13;
-        const mixNeed = (needLFinal * 10) / y;
-        const mixRounded = applyMin10(mixNeed);
-        return {
-          name:f.name,
-          priority:f.priority,
-          demandL:dPots,
-          stockL,
-          needLFinal,
-          yield10:y,
-          mixNeed,
-          mixRounded
-        };
-      });
-
-      // Allocate within dailyBatch by priority
-      const sorted = [...rows].sort((a,b)=>a.priority-b.priority || a.name.localeCompare(b.name));
-      let remaining = dailyBatch;
-      for(const r of sorted){
-        const take = Math.min(r.mixRounded, remaining);
-        r.mixPlanned = take;
-        remaining -= take;
-      }
-      // if remaining >0, keep 0 for others
-
-      // Render
-      const htmlRows = sorted.map(r=>`
+      const htmlRows = rows.map(r=>`
         <tr>
           <td>${r.name}</td>
-          <td>${r.demandL.toFixed(1)}</td>
-          <td>${r.stockL.toFixed(1)}</td>
-          <td>${r.needLFinal.toFixed(1)}</td>
-          <td>${r.mixNeed.toFixed(1)}</td>
-          <td>${r.mixRounded.toFixed(0)}</td>
-          <td><b>${(r.mixPlanned||0).toFixed(0)}</b></td>
+          <td>${r.objective_pots.toFixed(1)}</td>
+          <td>${r.objective_bacs.toFixed(1)}</td>
+          <td>${r.objective_bae.toFixed(1)}</td>
+          <td>${r.need_pots.toFixed(1)}</td>
+          <td>${r.need_bacs.toFixed(1)}</td>
+          <td>${r.need_bae.toFixed(1)}</td>
+          <td><b>${r.planned_l.toFixed(1)}</b></td>
+          <td><b>${r.base_l.toFixed(0)}</b></td>
         </tr>`).join("");
+
+      const sorbets = rows.filter(r=>r.type === "sorbet");
+      const glaces = rows.filter(r=>r.type === "glace");
+
+      const totalSorbets = totalsFor(sorbets);
+      const totalGlaces = totalsFor(glaces);
+      const totalAll = totalsFor(rows);
+
+      const laitCommander = (totalAll.base_l * 40) / 60;
 
       $("planTable").innerHTML = `
         <table>
           <thead>
             <tr>
-              <th>Parfum</th><th>Demande (L)</th><th>Stock (L)</th><th>Besoin (L)</th>
-              <th>Mix besoin (L)</th><th>Mix arrondi (L)</th><th>Mix planifié (L)</th>
+              <th rowspan="2">Parfum</th>
+              <th colspan="3">Objectif</th>
+              <th colspan="3">Besoin</th>
+              <th rowspan="2">Prod planifiée (L)</th>
+              <th rowspan="2">Base (L)</th>
+            </tr>
+            <tr>
+              <th>Pots 1L</th>
+              <th>Bacs</th>
+              <th>BAE</th>
+              <th>Pots 1L</th>
+              <th>Bacs</th>
+              <th>BAE</th>
             </tr>
           </thead>
-          <tbody>${htmlRows}</tbody>
+          <tbody>
+            ${htmlRows}
+            ${renderTotalRow("Total (sorbets)", totalSorbets)}
+            ${renderTotalRow("Total (glaces)", totalGlaces)}
+            ${renderTotalRow("Total", totalAll)}
+          </tbody>
         </table>
-        <p class="note">Reste batch: <b>${remaining.toFixed(0)} L</b> (sur ${dailyBatch} L)</p>
+        <p class="note">Quantité de lait à commander : <b>${laitCommander.toFixed(1)} L</b></p>
       `;
 
       show("plan");
@@ -534,11 +647,10 @@
     }
   });
 
-  // Realtime subscription on stock + flavors (optional)
   async function setupRealtime(){
     const channel = supabase.channel("realtime-stock")
       .on("postgres_changes", { event:"*", schema:"public", table:"stock" }, async ()=>{
-        await loadStock(); // refresh
+        await loadStock();
       })
       .on("postgres_changes", { event:"*", schema:"public", table:"flavors" }, async ()=>{
         await loadFlavors();
@@ -548,15 +660,9 @@
       });
   }
 
-  // Init
   await loadFlavors();
   await loadStock();
-  await loadSalesHistory();
   await setupRealtime();
-
-  // Prefill plan weekStart with sales weekStart if exists
-  const last = sales[0]?.week_start;
-  if(last){ $("planWeekStart").value = last; }
 </script>
 </body>
 </html>
