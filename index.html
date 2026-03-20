@@ -25,6 +25,7 @@
     .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
     .row4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+    .row5{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px}
     table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:14px}
     th,td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;font-size:13px;vertical-align:top}
     th{color:var(--muted);font-weight:650}
@@ -83,10 +84,14 @@
         </div>
       </div>
 
-      <div class="row4">
+      <div class="row5">
         <div>
           <label>Objectif stock - Pots 1L</label>
           <input id="fTargetPots" type="number" min="0" step="1" value="0">
+        </div>
+        <div>
+          <label>Objectif stock - Delhaize (L)</label>
+          <input id="fTargetDelhaize" type="number" min="0" step="0.1" value="0">
         </div>
         <div>
           <label>Objectif stock - Bacs</label>
@@ -184,7 +189,7 @@
   import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
   const SUPABASE_URL = "https://gpysazxtguhuelrwgwhk.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdweXNhenh0Z3VodWVscndnd2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0NjkyMzksImV4cCI6MjA4MjA0NTIzOX0.LtgX4K81vS_pBprPcQ5zMEtygg9V9jHHxx1f-w08kTM";
+  const SUPABASE_ANON_KEY = "TON_ANON_KEY";
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   const BAE_VOLUME_L = 2.5;
@@ -239,6 +244,7 @@
       enabled: row.enabled ?? true,
       flavor_type: row.flavor_type || "glace",
       target_pots_1l: toNum(row.target_pots_1l),
+      target_delhaize_l: toNum(row.target_delhaize_l),
       target_bacs: toNum(row.target_bacs),
       target_bac_type: row.target_bac_type || "grand",
       target_bae: toNum(row.target_bae)
@@ -297,6 +303,7 @@
         <td>${Number(f.yield_l_per_10l).toFixed(1)}</td>
         <td>${f.priority}</td>
         <td>${f.target_pots_1l}</td>
+        <td>${f.target_delhaize_l.toFixed(1)}</td>
         <td>${f.target_bacs} <span class="subhead">(${bacTypeLabel(f.target_bac_type)})</span></td>
         <td>${f.target_bae}</td>
         <td>${f.enabled ? "Oui":"Non"}</td>
@@ -310,16 +317,17 @@
             <th rowspan="2">Glace / sorbet</th>
             <th rowspan="2">Rendement</th>
             <th rowspan="2">Priorité</th>
-            <th colspan="3">Objectif de stock</th>
+            <th colspan="4">Objectif de stock</th>
             <th rowspan="2">Actif</th>
           </tr>
           <tr>
             <th>Pots 1L</th>
+            <th>Delhaize (L)</th>
             <th>Bacs</th>
             <th>BAE</th>
           </tr>
         </thead>
-        <tbody>${rows || `<tr><td colspan="8">Aucun parfum</td></tr>`}</tbody>
+        <tbody>${rows || `<tr><td colspan="9">Aucun parfum</td></tr>`}</tbody>
       </table>`;
   }
 
@@ -329,6 +337,7 @@
     const p = parseInt($("fPriority").value || "100",10);
     const flavor_type = $("fType").value;
     const target_pots_1l = parseInt($("fTargetPots").value || "0", 10);
+    const target_delhaize_l = toNum($("fTargetDelhaize").value);
     const target_bacs = parseInt($("fTargetBacs").value || "0", 10);
     const target_bac_type = $("fTargetBacType").value;
     const target_bae = parseInt($("fTargetBae").value || "0", 10);
@@ -342,6 +351,7 @@
       enabled: true,
       flavor_type,
       target_pots_1l,
+      target_delhaize_l,
       target_bacs,
       target_bac_type,
       target_bae
@@ -354,6 +364,7 @@
     $("fYield").value = "13.0";
     $("fPriority").value = "100";
     $("fTargetPots").value = "0";
+    $("fTargetDelhaize").value = "0";
     $("fTargetBacs").value = "0";
     $("fTargetBacType").value = "grand";
     $("fTargetBae").value = "0";
@@ -514,19 +525,23 @@
         const s = stockByName.get(f.name) || safeStock({ flavor_name: f.name });
 
         const objectivePots = toNum(f.target_pots_1l) * trend * coverage;
+        const objectiveDelhaize = toNum(f.target_delhaize_l) * trend * coverage;
         const objectiveBacs = toNum(f.target_bacs) * trend * coverage;
         const objectiveBae = toNum(f.target_bae) * trend * coverage;
 
-        const stockPots = toNum(s.distributor_l) + toNum(s.delhaize_l);
+        const stockPots = toNum(s.distributor_l);
+        const stockDelhaize = toNum(s.delhaize_l);
         const stockBacs = toNum(s.reserve_bacs_count);
         const stockBae = toNum(s.reserve_bae_count);
 
         const needPots = Math.max(0, objectivePots - stockPots);
+        const needDelhaize = Math.max(0, objectiveDelhaize - stockDelhaize);
         const needBacs = Math.max(0, objectiveBacs - stockBacs);
         const needBae = Math.max(0, objectiveBae - stockBae);
 
         const plannedLiters =
-          (needPots * 1) +
+          needPots +
+          needDelhaize +
           (needBacs * bacVolume(f.target_bac_type)) +
           (needBae * BAE_VOLUME_L);
 
@@ -538,9 +553,11 @@
           type: f.flavor_type,
           priority: f.priority,
           objective_pots: objectivePots,
+          objective_delhaize: objectiveDelhaize,
           objective_bacs: objectiveBacs,
           objective_bae: objectiveBae,
           need_pots: needPots,
+          need_delhaize: needDelhaize,
           need_bacs: needBacs,
           need_bae: needBae,
           planned_l: plannedLiters,
@@ -552,17 +569,19 @@
   function totalsFor(rows){
     return rows.reduce((acc, r)=>{
       acc.objective_pots += r.objective_pots;
+      acc.objective_delhaize += r.objective_delhaize;
       acc.objective_bacs += r.objective_bacs;
       acc.objective_bae += r.objective_bae;
       acc.need_pots += r.need_pots;
+      acc.need_delhaize += r.need_delhaize;
       acc.need_bacs += r.need_bacs;
       acc.need_bae += r.need_bae;
       acc.planned_l += r.planned_l;
       acc.base_l += r.base_l;
       return acc;
     }, {
-      objective_pots:0, objective_bacs:0, objective_bae:0,
-      need_pots:0, need_bacs:0, need_bae:0,
+      objective_pots:0, objective_delhaize:0, objective_bacs:0, objective_bae:0,
+      need_pots:0, need_delhaize:0, need_bacs:0, need_bae:0,
       planned_l:0, base_l:0
     });
   }
@@ -572,9 +591,11 @@
       <tr class="total-row">
         <td>${label}</td>
         <td>${totals.objective_pots.toFixed(1)}</td>
+        <td>${totals.objective_delhaize.toFixed(1)}</td>
         <td>${totals.objective_bacs.toFixed(1)}</td>
         <td>${totals.objective_bae.toFixed(1)}</td>
         <td>${totals.need_pots.toFixed(1)}</td>
+        <td>${totals.need_delhaize.toFixed(1)}</td>
         <td>${totals.need_bacs.toFixed(1)}</td>
         <td>${totals.need_bae.toFixed(1)}</td>
         <td>${totals.planned_l.toFixed(1)}</td>
@@ -594,9 +615,11 @@
         <tr>
           <td>${r.name}</td>
           <td>${r.objective_pots.toFixed(1)}</td>
+          <td>${r.objective_delhaize.toFixed(1)}</td>
           <td>${r.objective_bacs.toFixed(1)}</td>
           <td>${r.objective_bae.toFixed(1)}</td>
           <td>${r.need_pots.toFixed(1)}</td>
+          <td>${r.need_delhaize.toFixed(1)}</td>
           <td>${r.need_bacs.toFixed(1)}</td>
           <td>${r.need_bae.toFixed(1)}</td>
           <td><b>${r.planned_l.toFixed(1)}</b></td>
@@ -617,16 +640,18 @@
           <thead>
             <tr>
               <th rowspan="2">Parfum</th>
-              <th colspan="3">Objectif</th>
-              <th colspan="3">Besoin</th>
+              <th colspan="4">Objectif</th>
+              <th colspan="4">Besoin</th>
               <th rowspan="2">Prod planifiée (L)</th>
               <th rowspan="2">Base (L)</th>
             </tr>
             <tr>
               <th>Pots 1L</th>
+              <th>Delhaize (L)</th>
               <th>Bacs</th>
               <th>BAE</th>
               <th>Pots 1L</th>
+              <th>Delhaize (L)</th>
               <th>Bacs</th>
               <th>BAE</th>
             </tr>
