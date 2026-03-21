@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Clé de production glaces</title>
+  <style>
+    :root{--bg:#0b1220;--card:#121b2f;--muted:#9bb0d0;--text:#e8eefc;--accent:#6ea8ff;--ok:#55d38b;--warn:#ffcc66;--bad:#ff6b6b;}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;background:linear-gradient(180deg,#070b14,#0b1220);color:var(--text);}
+    header{position:sticky;top:0;background:rgba(7,11,20,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.07)}
+    .wrap{max-width:1300px;margin:0 auto;padding:18px}
+    nav{display:flex;gap:10px;flex-wrap:wrap}
+    .tab{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.03);color:var(--text);cursor:pointer}
+    .tab.active{border-color:rgba(110,168,255,.55);box-shadow:0 0 0 3px rgba(110,168,255,.12)}
+    .grid{display:grid;grid-template-columns:1fr;gap:14px}
+    @media(min-width:900px){.grid.two{grid-template-columns:1fr 1fr}}
+    .card{background:rgba(18,27,47,.82);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;box-shadow:0 18px 60px rgba(0,0,0,.25)}
+    h1{font-size:18px;margin:0 0 8px}
+    h2{font-size:14px;margin:0 0 10px;color:var(--muted);font-weight:600}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    input,select{width:100%;padding:10px 11px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.25);color:var(--text);outline:none;box-sizing:border-box}
+    input:focus,select:focus{border-color:rgba(110,168,255,.55);box-shadow:0 0 0 3px rgba(110,168,255,.10)}
+    button{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(110,168,255,.18);color:var(--text);cursor:pointer}
+    button:hover{background:rgba(110,168,255,.24)}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .row4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+    .row5{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px}
+    table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:14px}
+    th,td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;font-size:13px;vertical-align:top}
+    th{color:var(--muted);font-weight:650}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);color:var(--muted);font-size:12px}
+    .right{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+    .note{font-size:12px;color:var(--muted);line-height:1.35}
+    .status{font-size:12px}
+    .ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+    .hidden{display:none}
+    .mini-stack{display:grid;gap:6px}
+    .inline-grid{display:grid;grid-template-columns:1fr 140px;gap:6px}
+    .op-input{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .subhead{font-size:11px;color:var(--muted)}
+    .total-row td{font-weight:700;background:rgba(255,255,255,.03)}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <nav>
+      <button class="tab active" data-page="parfums">Parfums</button>
+      <button class="tab" data-page="stock">Stock</button>
+      <button class="tab" data-page="plan">Plan</button>
+      <span class="pill" id="rtPill">● Temps réel: <b id="rtState">…</b></span>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="page-parfums" class="grid two" style="margin-top:14px">
+    <div class="card">
+      <h1>Ajouter / modifier un parfum</h1>
+
+      <div class="row">
+        <div>
+          <label>Nom</label>
+          <input id="fName" placeholder="ex: Vanille">
+        </div>
+        <div>
+          <label>Type</label>
+          <select id="fType">
+            <option value="glace">Glace</option>
+            <option value="sorbet">Sorbet</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Rendement (L finale / 10L mix)</label>
+          <input id="fYield" type="number" step="0.1" value="13.0">
+        </div>
+        <div>
+          <label>Priorité (petit = plus prioritaire)</label>
+          <input id="fPriority" type="number" value="100">
+        </div>
+      </div>
+
+      <div class="row5">
+        <div>
+          <label>Objectif stock - Pots 1L</label>
+          <input id="fTargetPots" type="number" min="0" step="1" value="0">
+        </div>
+        <div>
+          <label>Objectif stock - Delhaize (L)</label>
+          <input id="fTargetDelhaize" type="number" min="0" step="0.1" value="0">
+        </div>
+        <div>
+          <label>Objectif stock - Bacs</label>
+          <input id="fTargetBacs" type="number" min="0" step="1" value="0">
+        </div>
+        <div>
+          <label>Type de bacs</label>
+          <select id="fTargetBacType">
+            <option value="grand">Grand (5L)</option>
+            <option value="petit">Petit (2.5L)</option>
+          </select>
+        </div>
+        <div>
+          <label>Objectif stock - BAE</label>
+          <input id="fTargetBae" type="number" min="0" step="1" value="0">
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <div></div>
+        <div style="display:flex;align-items:end;gap:10px;justify-content:flex-end">
+          <button id="saveFlavor">Enregistrer</button>
+          <button id="reloadAll">Recharger</button>
+        </div>
+      </div>
+
+      <p class="note">Les objectifs de stock saisis ici sont repris automatiquement dans l’onglet plan.</p>
+    </div>
+
+    <div class="card">
+      <h1>Liste des parfums</h1>
+      <div id="flavorTable"></div>
+    </div>
+  </section>
+
+  <section id="page-stock" class="grid hidden" style="margin-top:14px">
+    <div class="card">
+      <h1>Stock (temps réel)</h1>
+      <div id="stockTable"></div>
+      <div class="right" style="margin-top:10px">
+        <button id="saveStock">Sauvegarder stock</button>
+      </div>
+      <p class="note">Dans Réserve distributeur (L) et Réserve Delhaize (L), tu peux soit saisir directement le chiffre, soit entrer une opération simple comme +13 ou -5. Le calcul s’applique immédiatement à l’écran.</p>
+    </div>
+  </section>
+
+  <section id="page-plan" class="grid hidden" style="margin-top:14px">
+    <div class="card">
+      <h1>Configuration</h1>
+      <div class="row">
+        <div>
+          <label>Objectif couverture (semaines)</label>
+          <input id="coverageWeeks" type="number" step="0.1" value="1.0">
+        </div>
+        <div>
+          <label>Batch journée (L mix)</label>
+          <input id="dailyBatchMix" type="number" step="1" value="60">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Capacité stockage (pots 1L)</label>
+          <input id="capDist" type="number" value="72">
+        </div>
+        <div>
+          <label>Capacité stockage (bacs)</label>
+          <input id="capBacs" type="number" value="30">
+        </div>
+      </div>
+      <p class="note">Les bacs sont comptés en nombre de bacs. Grand = 5L, petit = 2.5L. Un BAE = 2.5L.</p>
+    </div>
+
+    <div class="card">
+      <h1>Plan de production (suggestion)</h1>
+      <div class="row3">
+        <div></div>
+        <div>
+          <label>Facteur tendance (ex: 1.10)</label>
+          <input id="trendFactor" type="number" step="0.01" value="1.00">
+        </div>
+        <div class="right" style="align-items:end">
+          <button id="computePlan">Calculer</button>
+        </div>
+      </div>
+
+      <div id="planTable" style="margin-top:12px"></div>
+      <p class="note">
+        Logique : production = (objectif de stock − stocks) + marge (0 ici). La base est calculée via le rendement, puis arrondie au multiple de 5 supérieur. Les parfums sont affichés par ordre de priorité.
+      </p>
+    </div>
+  </section>
+</main>
+
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+  const SUPABASE_URL = "https://gpysazxtguhuelrwgwhk.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdweXNhenh0Z3VodWVscndnd2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0NjkyMzksImV4cCI6MjA4MjA0NTIzOX0.LtgX4K81vS_pBprPcQ5zMEtygg9V9jHHxx1f-w08kTM";
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const BAE_VOLUME_L = 2.5;
+
+  const tabs = [...document.querySelectorAll(".tab")];
+  const pages = {
+    parfums: document.getElementById("page-parfums"),
+    stock: document.getElementById("page-stock"),
+    plan: document.getElementById("page-plan")
+  };
+
+  function show(page){
+    tabs.forEach(t=>t.classList.toggle("active", t.dataset.page===page));
+    Object.entries(pages).forEach(([k,el])=>{
+      const visible = (k===page);
+      el.classList.toggle("hidden", !visible);
+      el.style.display = visible ? "" : "none";
+    });
+  }
+  tabs.forEach(t=>t.addEventListener("click", ()=>show(t.dataset.page)));
+
+  const $ = (id)=>document.getElementById(id);
+  const toNum = (v)=> (v===""||v==null) ? 0 : Number(v);
+  const ceilTo5 = (x)=> x <= 0 ? 0 : Math.ceil(x / 5) * 5;
+
+  function parseMathUpdate(expr, currentValue){
+    const raw = String(expr ?? "").trim().replace(",", ".");
+    if(raw === "") return currentValue;
+    if(/^[+-]\d+(\.\d+)?$/.test(raw)) return currentValue + Number(raw);
+    if(/^\d+(\.\d+)?$/.test(raw)) return Number(raw);
+    return currentValue;
+  }
+
+  function bacTypeLabel(type){
+    return type === "petit" ? "Petit (2.5L)" : "Grand (5L)";
+  }
+
+  function bacVolume(type){
+    return type === "petit" ? 2.5 : 5;
+  }
+
+  function capFirst(str){
+    const s = String(str || "");
+    return s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+  }
+
+  function safeFlavor(row){
+    return {
+      name: row.name,
+      yield_l_per_10l: toNum(row.yield_l_per_10l) || 13,
+      priority: parseInt(row.priority ?? 100, 10),
+      enabled: row.enabled ?? true,
+      flavor_type: row.flavor_type || "glace",
+      target_pots_1l: toNum(row.target_pots_1l),
+      target_delhaize_l: toNum(row.target_delhaize_l),
+      target_bacs: toNum(row.target_bacs),
+      target_bac_type: row.target_bac_type || "grand",
+      target_bae: toNum(row.target_bae)
+    };
+  }
+
+  function safeStock(row){
+    return {
+      flavor_name: row.flavor_name,
+      distributor_l: toNum(row.distributor_l),
+      delhaize_l: toNum(row.delhaize_l),
+      reserve_bacs_count: toNum(row.reserve_bacs_count),
+      reserve_bacs_type: row.reserve_bacs_type || "grand",
+      reserve_bae_count: toNum(row.reserve_bae_count),
+      updated_at: row.updated_at || null
+    };
+  }
+
+  let flavors = [];
+  let stock = [];
+
+  const rtState = $("rtState");
+  function setRT(ok){
+    rtState.textContent = ok ? "ON" : "OFF";
+    rtState.className = ok ? "ok" : "bad";
+  }
+  setRT(false);
+
+  async function loadFlavors(){
+    const { data, error } = await supabase
+      .from("flavors")
+      .select("*")
+      .order("priority",{ascending:true})
+      .order("name",{ascending:true});
+    if(error) throw error;
+    flavors = (data ?? []).map(safeFlavor);
+    renderFlavors();
+    renderStockEntry();
+  }
+
+  async function loadStock(){
+    const { data, error } = await supabase
+      .from("stock")
+      .select("*")
+      .order("flavor_name",{ascending:true});
+    if(error) throw error;
+    stock = (data ?? []).map(safeStock);
+    renderStockEntry();
+  }
+
+  function renderFlavors(){
+    const rows = flavors.map(f=>`
+      <tr>
+        <td>${f.name}</td>
+        <td>${capFirst(f.flavor_type)}</td>
+        <td>${Number(f.yield_l_per_10l).toFixed(1)}</td>
+        <td>${f.priority}</td>
+        <td>${f.target_pots_1l}</td>
+        <td>${f.target_delhaize_l.toFixed(1)}</td>
+        <td>${f.target_bacs} <span class="subhead">(${bacTypeLabel(f.target_bac_type)})</span></td>
+        <td>${f.target_bae}</td>
+        <td>${f.enabled ? "Oui":"Non"}</td>
+      </tr>`).join("");
+
+    $("flavorTable").innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th rowspan="2">Parfum</th>
+            <th rowspan="2">Glace / sorbet</th>
+            <th rowspan="2">Rendement</th>
+            <th rowspan="2">Priorité</th>
+            <th colspan="4">Objectif de stock</th>
+            <th rowspan="2">Actif</th>
+          </tr>
+          <tr>
+            <th>Pots 1L</th>
+            <th>Delhaize (L)</th>
+            <th>Bacs</th>
+            <th>BAE</th>
+          </tr>
+        </thead>
+        <tbody>${rows || `<tr><td colspan="9">Aucun parfum</td></tr>`}</tbody>
+      </table>`;
+  }
+
+  $("saveFlavor").addEventListener("click", async ()=>{
+    const name = $("fName").value.trim();
+    const y = toNum($("fYield").value);
+    const p = parseInt($("fPriority").value || "100",10);
+    const flavor_type = $("fType").value;
+    const target_pots_1l = parseInt($("fTargetPots").value || "0", 10);
+    const target_delhaize_l = toNum($("fTargetDelhaize").value);
+    const target_bacs = parseInt($("fTargetBacs").value || "0", 10);
+    const target_bac_type = $("fTargetBacType").value;
+    const target_bae = parseInt($("fTargetBae").value || "0", 10);
+
+    if(!name){ alert("Nom requis"); return; }
+
+    const { error } = await supabase.from("flavors").upsert({
+      name,
+      yield_l_per_10l: y,
+      priority: p,
+      enabled: true,
+      flavor_type,
+      target_pots_1l,
+      target_delhaize_l,
+      target_bacs,
+      target_bac_type,
+      target_bae
+    }, { onConflict:"name" });
+
+    if(error){ alert(error.message); return; }
+
+    $("fName").value = "";
+    $("fType").value = "glace";
+    $("fYield").value = "13.0";
+    $("fPriority").value = "100";
+    $("fTargetPots").value = "0";
+    $("fTargetDelhaize").value = "0";
+    $("fTargetBacs").value = "0";
+    $("fTargetBacType").value = "grand";
+    $("fTargetBae").value = "0";
+
+    await loadFlavors();
+  });
+
+  $("reloadAll").addEventListener("click", async ()=>{
+    await Promise.all([loadFlavors(), loadStock()]);
+  });
+
+  function ensureStockRows(){
+    const byName = new Map(stock.map(s=>[s.flavor_name, s]));
+    return flavors.map(f=>{
+      const s = byName.get(f.name) || {
+        flavor_name: f.name,
+        distributor_l: 0,
+        delhaize_l: 0,
+        reserve_bacs_count: 0,
+        reserve_bacs_type: "grand",
+        reserve_bae_count: 0
+      };
+      return safeStock(s);
+    });
+  }
+
+  function applyStockOperation(flavorName, field){
+    const directInput = document.querySelector(`[data-stock-${field}="${flavorName}"]`);
+    const opInput = document.querySelector(`[data-stock-${field}-op="${flavorName}"]`);
+    if(!directInput || !opInput) return;
+
+    const expr = opInput.value.trim();
+    if(!expr) return;
+
+    const currentValue = toNum(directInput.value);
+    const nextValue = parseMathUpdate(expr, currentValue);
+    if(nextValue !== currentValue){
+      directInput.value = Math.max(0, nextValue);
+      opInput.value = "";
+    }
+  }
+
+  function bindStockInstantOperations(){
+    ["dist", "del"].forEach(field=>{
+      document.querySelectorAll(`[data-stock-${field}-op]`).forEach(input=>{
+        input.addEventListener("keydown", (e)=>{
+          if(e.key === "Enter"){
+            e.preventDefault();
+            applyStockOperation(input.dataset[`stock${field.charAt(0).toUpperCase()+field.slice(1)}Op`], field);
+          }
+        });
+
+        input.addEventListener("blur", ()=>{
+          applyStockOperation(input.dataset[`stock${field.charAt(0).toUpperCase()+field.slice(1)}Op`], field);
+        });
+      });
+    });
+  }
+
+  function renderStockEntry(){
+    const rows = ensureStockRows().map(s=>`
+      <tr>
+        <td>${s.flavor_name}</td>
+
+        <td>
+          <div class="mini-stack">
+            <input data-stock-dist="${s.flavor_name}" type="number" step="0.1" value="${toNum(s.distributor_l)}">
+            <input data-stock-dist-op="${s.flavor_name}" class="op-input" type="text" placeholder="+13 / -5">
+          </div>
+        </td>
+
+        <td>
+          <div class="mini-stack">
+            <input data-stock-del="${s.flavor_name}" type="number" step="0.1" value="${toNum(s.delhaize_l)}">
+            <input data-stock-del-op="${s.flavor_name}" class="op-input" type="text" placeholder="+13 / -5">
+          </div>
+        </td>
+
+        <td>
+          <div class="inline-grid">
+            <input data-stock-bacs="${s.flavor_name}" type="number" min="0" step="1" value="${toNum(s.reserve_bacs_count)}">
+            <select data-stock-bacs-type="${s.flavor_name}">
+              <option value="grand" ${s.reserve_bacs_type === "grand" ? "selected" : ""}>Grand (5L)</option>
+              <option value="petit" ${s.reserve_bacs_type === "petit" ? "selected" : ""}>Petit (2.5L)</option>
+            </select>
+          </div>
+        </td>
+
+        <td>
+          <input data-stock-bae="${s.flavor_name}" type="number" min="0" step="1" value="${toNum(s.reserve_bae_count)}">
+        </td>
+      </tr>`).join("");
+
+    $("stockTable").innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Parfum</th>
+            <th>Réserve distributeur (L)</th>
+            <th>Réserve Delhaize (L)</th>
+            <th>Réserve (bacs)</th>
+            <th>Réserve (BAE)</th>
+          </tr>
+        </thead>
+        <tbody>${rows || `<tr><td colspan="5">Ajoute des parfums d’abord</td></tr>`}</tbody>
+      </table>`;
+
+    bindStockInstantOperations();
+  }
+
+  $("saveStock").addEventListener("click", async ()=>{
+    const currentRows = ensureStockRows();
+
+    const distInputs = [...document.querySelectorAll("[data-stock-dist]")];
+    const delInputs = [...document.querySelectorAll("[data-stock-del]")];
+    const bacsInputs = new Map([...document.querySelectorAll("[data-stock-bacs]")].map(i=>[i.dataset.stockBacs, i.value]));
+    const bacsTypes = new Map([...document.querySelectorAll("[data-stock-bacs-type]")].map(i=>[i.dataset.stockBacsType, i.value]));
+    const baeInputs = new Map([...document.querySelectorAll("[data-stock-bae]")].map(i=>[i.dataset.stockBae, i.value]));
+
+    const payload = flavors.map(f=>{
+      const current = currentRows.find(s=>s.flavor_name === f.name) || safeStock({ flavor_name: f.name });
+
+      const distributor_l = Math.max(0, toNum(distInputs.find(i=>i.dataset.stockDist === f.name)?.value ?? current.distributor_l));
+      const delhaize_l = Math.max(0, toNum(delInputs.find(i=>i.dataset.stockDel === f.name)?.value ?? current.delhaize_l));
+
+      return {
+        flavor_name: f.name,
+        distributor_l,
+        delhaize_l,
+        reserve_bacs_count: Math.max(0, parseInt(bacsInputs.get(f.name) || "0", 10)),
+        reserve_bacs_type: bacsTypes.get(f.name) || "grand",
+        reserve_bae_count: Math.max(0, parseInt(baeInputs.get(f.name) || "0", 10)),
+        updated_at: new Date().toISOString()
+      };
+    });
+
+    const { error } = await supabase.from("stock").upsert(payload, { onConflict:"flavor_name" });
+
+    if(error){
+      if(String(error.message || "").includes("delhaize_l")){
+        alert("La colonne delhaize_l n’existe pas encore dans Supabase. Exécute le script SQL d’ajout des colonnes dans la table stock, puis recharge la page.");
+        return;
+      }
+      alert(error.message);
+      return;
+    }
+
+    await loadStock();
+    alert("Stock sauvegardé.");
+  });
+
+  function computePlanRows(trend, coverage){
+    const stockByName = new Map(stock.map(s=>[s.flavor_name, s]));
+
+    return flavors
+      .filter(f => f.enabled)
+      .map(f=>{
+        const s = stockByName.get(f.name) || safeStock({ flavor_name: f.name });
+
+        const objectivePots = toNum(f.target_pots_1l) * trend * coverage;
+        const objectiveDelhaize = toNum(f.target_delhaize_l) * trend * coverage;
+        const objectiveBacs = toNum(f.target_bacs) * trend * coverage;
+        const objectiveBae = toNum(f.target_bae) * trend * coverage;
+
+        const stockPots = toNum(s.distributor_l);
+        const stockDelhaize = toNum(s.delhaize_l);
+        const stockBacs = toNum(s.reserve_bacs_count);
+        const stockBae = toNum(s.reserve_bae_count);
+
+        const needPots = Math.max(0, objectivePots - stockPots);
+        const needDelhaize = Math.max(0, objectiveDelhaize - stockDelhaize);
+        const needBacs = Math.max(0, objectiveBacs - stockBacs);
+        const needBae = Math.max(0, objectiveBae - stockBae);
+
+        const plannedLiters =
+          needPots +
+          needDelhaize +
+          (needBacs * bacVolume(f.target_bac_type)) +
+          (needBae * BAE_VOLUME_L);
+
+        const baseNeededRaw = plannedLiters <= 0 ? 0 : (plannedLiters * 10) / toNum(f.yield_l_per_10l);
+        const baseNeededRounded = ceilTo5(baseNeededRaw);
+
+        return {
+          name: f.name,
+          type: f.flavor_type,
+          priority: f.priority,
+          objective_pots: objectivePots,
+          objective_delhaize: objectiveDelhaize,
+          objective_bacs: objectiveBacs,
+          objective_bae: objectiveBae,
+          need_pots: needPots,
+          need_delhaize: needDelhaize,
+          need_bacs: needBacs,
+          need_bae: needBae,
+          planned_l: plannedLiters,
+          base_l: baseNeededRounded
+        };
+      });
+  }
+
+  function totalsFor(rows){
+    return rows.reduce((acc, r)=>{
+      acc.objective_pots += r.objective_pots;
+      acc.objective_delhaize += r.objective_delhaize;
+      acc.objective_bacs += r.objective_bacs;
+      acc.objective_bae += r.objective_bae;
+      acc.need_pots += r.need_pots;
+      acc.need_delhaize += r.need_delhaize;
+      acc.need_bacs += r.need_bacs;
+      acc.need_bae += r.need_bae;
+      acc.planned_l += r.planned_l;
+      acc.base_l += r.base_l;
+      return acc;
+    }, {
+      objective_pots:0, objective_delhaize:0, objective_bacs:0, objective_bae:0,
+      need_pots:0, need_delhaize:0, need_bacs:0, need_bae:0,
+      planned_l:0, base_l:0
+    });
+  }
+
+  function renderTotalRow(label, totals){
+    return `
+      <tr class="total-row">
+        <td>${label}</td>
+        <td>${totals.objective_pots.toFixed(1)}</td>
+        <td>${totals.objective_delhaize.toFixed(1)}</td>
+        <td>${totals.objective_bacs.toFixed(1)}</td>
+        <td>${totals.objective_bae.toFixed(1)}</td>
+        <td>${totals.need_pots.toFixed(1)}</td>
+        <td>${totals.need_delhaize.toFixed(1)}</td>
+        <td>${totals.need_bacs.toFixed(1)}</td>
+        <td>${totals.need_bae.toFixed(1)}</td>
+        <td>${totals.planned_l.toFixed(1)}</td>
+        <td>${totals.base_l.toFixed(0)}</td>
+      </tr>`;
+  }
+
+  $("computePlan").addEventListener("click", async ()=>{
+    try{
+      const trend = toNum($("trendFactor").value) || 1;
+      const coverage = toNum($("coverageWeeks").value) || 1;
+
+      const rows = computePlanRows(trend, coverage)
+        .sort((a,b)=>a.priority-b.priority || a.name.localeCompare(b.name));
+
+      const htmlRows = rows.map(r=>`
+        <tr>
+          <td>${r.name}</td>
+          <td>${r.objective_pots.toFixed(1)}</td>
+          <td>${r.objective_delhaize.toFixed(1)}</td>
+          <td>${r.objective_bacs.toFixed(1)}</td>
+          <td>${r.objective_bae.toFixed(1)}</td>
+          <td>${r.need_pots.toFixed(1)}</td>
+          <td>${r.need_delhaize.toFixed(1)}</td>
+          <td>${r.need_bacs.toFixed(1)}</td>
+          <td>${r.need_bae.toFixed(1)}</td>
+          <td><b>${r.planned_l.toFixed(1)}</b></td>
+          <td><b>${r.base_l.toFixed(0)}</b></td>
+        </tr>`).join("");
+
+      const sorbets = rows.filter(r=>r.type === "sorbet");
+      const glaces = rows.filter(r=>r.type === "glace");
+
+      const totalSorbets = totalsFor(sorbets);
+      const totalGlaces = totalsFor(glaces);
+      const totalAll = totalsFor(rows);
+
+      const laitCommander = (totalAll.base_l * 40) / 60;
+
+      $("planTable").innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th rowspan="2">Parfum</th>
+              <th colspan="4">Objectif</th>
+              <th colspan="4">Besoin</th>
+              <th rowspan="2">Prod planifiée (L)</th>
+              <th rowspan="2">Base (L)</th>
+            </tr>
+            <tr>
+              <th>Pots 1L</th>
+              <th>Delhaize (L)</th>
+              <th>Bacs</th>
+              <th>BAE</th>
+              <th>Pots 1L</th>
+              <th>Delhaize (L)</th>
+              <th>Bacs</th>
+              <th>BAE</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${htmlRows}
+            ${renderTotalRow("Total (sorbets)", totalSorbets)}
+            ${renderTotalRow("Total (glaces)", totalGlaces)}
+            ${renderTotalRow("Total", totalAll)}
+          </tbody>
+        </table>
+        <p class="note">Quantité de lait à commander : <b>${laitCommander.toFixed(1)} L</b></p>
+      `;
+
+      show("plan");
+    }catch(e){
+      alert(e.message || String(e));
+    }
+  });
+
+  async function setupRealtime(){
+    const channel = supabase.channel("realtime-stock")
+      .on("postgres_changes", { event:"*", schema:"public", table:"stock" }, async ()=>{
+        await loadStock();
+      })
+      .on("postgres_changes", { event:"*", schema:"public", table:"flavors" }, async ()=>{
+        await loadFlavors();
+      })
+      .subscribe((status)=>{
+        setRT(status === "SUBSCRIBED");
+      });
+  }
+
+  await loadFlavors();
+  await loadStock();
+  await setupRealtime();
+</script>
+</body>
+</html>
