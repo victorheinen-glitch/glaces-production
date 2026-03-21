@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Labelizer" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/svg+xml" sizes="192x192" href="./icons/icon-192.svg" />
+  <link rel="icon" type="image/svg+xml" sizes="512x512" href="./icons/icon-512.svg" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.svg" />
+  <title>LABELIZER – Glaces & Sorbets (Temps réel)</title>
+
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:#121b2f;
+      --muted:#9bb0d0;
+      --text:#e8eefc;
+      --accent:#6ea8ff;
+      --accent2:#55d38b;
+      --warn:#ffcc66;
+      --bad:#ff6b6b;
+      --border:rgba(255,255,255,.10);
+      --shadow:0 18px 60px rgba(0,0,0,.28);
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      padding:16px;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;
+      color:var(--text);
+      background: linear-gradient(180deg,#070b14,#0b1220);
+    }
+
+    h1{ margin:0 0 4px 0; font-size:20px; }
+    .subtitle{
+      margin:0 0 10px 0;
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.35;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--border);
+      color:var(--muted);
+      font-size:12px;
+      white-space:nowrap;
+    }
+
+    .pill b{ color:var(--text); }
+    .dot{ font-weight:900; }
+    .ok{ color:var(--accent2); }
+    .bad{ color:var(--bad); }
+    .warn{ color:var(--warn); }
+
+    .print-warning{
+      margin:0 0 12px 0;
+      font-size:12px;
+      color:var(--text);
+      background: rgba(255,204,102,.12);
+      border: 1px solid rgba(255,204,102,.35);
+      padding:10px 12px;
+      border-radius:14px;
+    }
+
+    .top-controls{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+      font-size:13px;
+    }
+
+    label{ font-size:12px; font-weight:650; color:var(--muted); }
+
+    select, input, textarea{
+      width:100%;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;
+      padding:10px 11px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background: rgba(0,0,0,.22);
+      color: var(--text);
+      outline:none;
+      font-size:13px;
+    }
+
+    textarea{
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    select:focus, input:focus, textarea:focus{
+      border-color: rgba(110,168,255,.55);
+      box-shadow: 0 0 0 3px rgba(110,168,255,.10);
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns: minmax(260px, 1.2fr) minmax(260px, 1fr) minmax(260px, 1.2fr);
+      gap:16px;
+      align-items:start;
+    }
+
+    @media (max-width: 1000px){
+      .layout{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      background: rgba(18,27,47,.82);
+      border:1px solid rgba(255,255,255,.08);
+      padding: 14px 14px;
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .card h2{
+      margin:0 0 8px 0;
+      font-size:16px;
+      letter-spacing:.2px;
+    }
+
+    .card small{
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.35;
+      display:block;
+    }
+
+    .filter-row{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+
+    .divider{
+      height:1px;
+      background: rgba(255,255,255,.08);
+      margin: 12px 0;
+    }
+
+    .product-list{
+      margin-top: 10px;
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+    }
+
+    .product-btn{
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      padding: 10px 10px;
+      text-align:left;
+      cursor:pointer;
+      background: rgba(255,255,255,.04);
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      transition: transform .05s ease, background .12s ease, border-color .12s ease;
+    }
+    .product-btn:hover{
+      background: rgba(110,168,255,.10);
+      border-color: rgba(110,168,255,.45);
+      transform: translateY(-1px);
+    }
+
+    .product-name{ font-weight:700; font-size:13px; color:var(--text); }
+    .product-cat{ font-size:11px; color:var(--muted); }
+
+    .btn{
+      padding: 10px 12px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(110,168,255,.18);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 700;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .btn:hover{ background: rgba(110,168,255,.24); }
+
+    .btn.secondary{
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+    }
+    .btn.secondary:hover{ background: rgba(255,255,255,.08); }
+
+    .btn.danger{
+      background: rgba(255,107,107,.18);
+    }
+    .btn.danger:hover{ background: rgba(255,107,107,.26); }
+
+    .btn-row{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+
+    .form-grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .inline-field{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .inline-field input{ flex:1; }
+
+    .cart-table{
+      width:100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      overflow:hidden;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .cart-table th, .cart-table td{
+      padding: 8px 8px;
+      border-bottom:1px solid rgba(255,255,255,.07);
+      text-align:left;
+      vertical-align:middle;
+    }
+    .cart-table th{
+      color: var(--muted);
+      font-weight:800;
+      font-size: 12px;
+      background: rgba(255,255,255,.04);
+    }
+
+    .qty-cell{ white-space:nowrap; }
+
+    .qty-btn{
+      padding: 4px 8px;
+      margin: 0 2px;
+      border-radius: 10px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      cursor:pointer;
+      font-size:12px;
+      font-weight:700;
+    }
+    .qty-btn:hover{ background: rgba(255,255,255,.08); }
+
+    .qty-input{
+      width: 60px;
+      padding: 6px 6px;
+      border-radius: 10px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      color: var(--text);
+      font-size: 12px;
+      text-align:center;
+      outline:none;
+    }
+
+    .empty-hint{ font-size: 12px; color: var(--muted); }
+
+    /* ===================== ÉTIQUETTE (ton CSS original conservé, juste compatible thème) ===================== */
+    .label-preview {
+      border: 1px solid #333;
+      padding: 2.2mm 3mm 2mm 3mm;
+      box-sizing: border-box;
+      font-size: 10pt;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      background: #fff;
+      color: #000;
+    }
+
+    body.format-90 .label-preview { width: 90mm; height: 29mm; }
+    body.format-62 .label-preview { width: 62mm; height: auto; min-height: 29mm; }
+    body.format-29 .label-preview { width: 90mm; height: 29mm; }
+
+    .label-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 1mm;
+      flex-shrink: 0;
+    }
+
+    .label-header-left { flex: 1 1 40%; margin-right: 2mm; overflow: hidden; }
+    .label-header-center { flex: 0 0 auto; text-align: center; margin: 0 2mm; white-space: nowrap; }
+    .label-header-right { flex: 0 0 auto; text-align: right; min-width: 22mm; }
+
+    .label-name {
+      font-weight: 700;
+      font-size: 10pt;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .label-dlc-top { font-size: 8pt; font-weight: 700; }
+    .label-qty-top { font-size: 7.5pt; font-weight: 600; }
+
+    .label-body {
+      flex: 1 1 auto;
+      overflow: hidden;
+    }
+
+    .label-section {
+      font-size: 7.2pt;
+      line-height: 1.08;
+      margin-bottom: 0.45mm;
+    }
+
+    .label-barcode-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0.35mm 0 0 0;
+    }
+
+    .label-barcode {
+      width: 100%;
+      max-width: 100%;
+      height: 34px;
+      display: block;
+    }
+
+    .label-footer {
+      flex-shrink: 0;
+      font-size: 5.5pt;
+      margin-top: 0.2mm;
+      text-align: center;
+    }
+
+    .label-preview.tight .label-name { font-size: 8pt; }
+    .label-preview.tight .label-dlc-top { font-size: 6.7pt; }
+    .label-preview.tight .label-qty-top { font-size: 6.3pt; }
+    .label-preview.tight .label-section { font-size: 5.8pt; line-height: 1.02; margin-bottom: 0.25mm; }
+    .label-preview.tight .label-footer { font-size: 4.8pt; margin-top: 0.15mm; }
+    .label-preview.tight .label-barcode { height: 28px; }
+
+    .label-preview.production-label {
+      justify-content: flex-start;
+      padding-top: 1.1mm;
+      padding-bottom: 1.1mm;
+    }
+    .label-preview.production-label .label-header {
+      align-items: flex-start;
+      margin-bottom: 0.8mm;
+    }
+    .label-preview.production-label .label-header-left {
+      flex: 1 1 100%;
+      margin-right: 0;
+    }
+    .label-preview.production-label .label-name {
+      font-size: 15.5pt;
+      line-height: 0.95;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+    }
+    .label-preview.production-label .label-header-center {
+      flex: 0 0 auto;
+      margin: 0 1.5mm 0 0;
+      align-self: flex-end;
+    }
+    .label-preview.production-label .label-header-right {
+      min-width: 0;
+      align-self: flex-end;
+    }
+    .label-preview.production-label .label-dlc-top {
+      font-size: 9pt;
+    }
+    .label-preview.production-label .label-qty-top {
+      font-size: 10pt;
+    }
+    .label-preview.production-label .label-body {
+      flex: 1 1 auto;
+      min-height: 14mm;
+      display: flex;
+      align-items: flex-end;
+    }
+    .label-preview.production-label .label-body .label-name {
+      width: 100%;
+      font-size: 16pt;
+    }
+
+    @page { size: 90mm 29mm; margin: 0; }
+
+    @media print {
+      html, body { margin: 0 !important; padding: 0 !important; }
+      body.format-62 { width: 62mm !important; }
+      body.format-29 { width: 90mm !important; height: 29mm !important; }
+      body > * { display: none !important; }
+      .print-label-only { display: block !important; }
+      .print-label-only .label-preview { border: none !important; margin: 0 !important; }
+    }
+  </style>
+</head>
+
+<body class="format-90">
+  <div class="topbar">
+    <div>
+      <h1>LABELIZER – Glaces & Sorbets</h1>
+      <p class="subtitle">
+        Touchez un parfum pour l’ajouter au panier, ajustez les quantités, puis cliquez sur <b>Imprimer les étiquettes</b>.
+        La DLC est mise par défaut à <b>aujourd’hui + 4 mois</b> (modifiable).<br>
+        <span style="color:var(--muted)">Les parfums/ingrédients sont partagés et synchronisés en temps réel via Supabase.</span>
+      </p>
+    </div>
+
+    <span class="pill" id="rtPill">
+      <span class="dot">●</span> Temps réel: <b id="rtState">…</b>
+    </span>
+  </div>
+
+  <div class="print-warning">
+    ✅ <b>Important :</b> lors de l’impression, vérifiez le <b>format papier / taille d’étiquette</b> (90×29, 62mm ou 29mm Brother).
+    Sinon l’étiquette peut sortir coupée ou mal centrée.
+  </div>
+
+  <div class="top-controls">
+    <div style="min-width:240px;">
+      <label for="labelFormat">Format d’étiquette</label>
+      <select id="labelFormat">
+        <option value="90">90 × 29 mm</option>
+        <option value="62">62 mm de large (hauteur auto)</option>
+        <option value="29">29 mm (Brother tape)</option>
+      </select>
+    </div>
+
+    <button class="btn secondary" id="btnImportDefaults" type="button" title="Ajoute tous les parfums par défaut dans Supabase (une fois)">
+      Importer les parfums par défaut
+    </button>
+
+    <span class="pill">
+      Astuce : <b>ajout/modif/suppression</b> des parfums = partagé ✔
+    </span>
+  </div>
+
+  <div class="layout">
+    <!-- COLONNE GAUCHE : PRODUITS -->
+    <div class="card">
+      <h2>Produits</h2>
+
+      <div class="filter-row">
+        <div style="min-width:200px; flex:1;">
+          <label for="filterCat">Catégorie</label>
+          <select id="filterCat">
+            <option value="Toutes">Toutes</option>
+            <option value="Glace">Glace</option>
+            <option value="Sorbet">Sorbet</option>
+          </select>
+        </div>
+      </div>
+
+      <small>Appuyez sur un produit pour l’ajouter au panier (1 unité).</small>
+      <div class="product-list" id="productList"></div>
+
+      <div class="divider"></div>
+
+      <h2>Production</h2>
+      <small>Ajoutez rapidement une étiquette de bac de production au panier avec un volume prédéfini.</small>
+
+      <div class="form-grid">
+        <div>
+          <label for="productionProduct">Produit</label>
+          <select id="productionProduct"></select>
+        </div>
+
+        <div>
+          <label for="productionSize">Contenant</label>
+          <select id="productionSize">
+            <option value="2.5 L">2.5 L</option>
+            <option value="5 L">5 L</option>
+          </select>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn" id="btnAddProduction" type="button">Add to cart</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <h2>Ajouter / Modifier un parfum</h2>
+      <small>Tout est stocké dans Supabase. Donc visible sur tous les appareils.</small>
+
+      <div class="form-grid">
+        <div>
+          <label for="editPick">Choisir un parfum à modifier</label>
+          <select id="editPick"></select>
+        </div>
+
+        <div>
+          <label for="editCat">Catégorie</label>
+          <select id="editCat">
+            <option value="Glace">Glace</option>
+            <option value="Sorbet">Sorbet</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="editName">Nom du parfum</label>
+          <input id="editName" type="text" placeholder="Ex : Noisette" />
+        </div>
+
+        <div>
+          <label for="editIng">Ingrédients</label>
+          <textarea id="editIng" placeholder="Ex : LAIT, sucre, ... (allergènes en MAJUSCULE)"></textarea>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn" id="btnSaveProduct" type="button">Enregistrer (ajout / modif)</button>
+          <button class="btn danger" id="btnDeleteOne" type="button">Supprimer ce parfum</button>
+          <button class="btn secondary" id="btnUnhideAll" type="button">Réafficher les parfums masqués</button>
+        </div>
+
+        <small>
+          Astuce : pour modifier, sélectionne un parfum dans la liste. Pour ajouter, écris un nouveau nom.
+        </small>
+      </div>
+    </div>
+
+    <!-- COLONNE CENTRE : PARAMÈTRES + PANIER -->
+    <div class="card">
+      <h2>Paramètres</h2>
+
+      <div>
+        <label>Quantité (en L ou mL, affichée en haut à droite)</label>
+        <div class="inline-field">
+          <input id="inputPoids" type="text" placeholder="Ex : 500 mL">
+        </div>
+      </div>
+
+      <div style="margin-top:10px;">
+        <label>DLC (par défaut : aujourd’hui + 4 mois)</label>
+        <div class="inline-field">
+          <input id="inputDLC" type="text" style="flex:1;">
+          <button class="btn secondary" id="btnResetDLC" type="button">Aujourd’hui + 4 mois</button>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;">
+        <label>Info conservation (facultatif)</label>
+        <input id="inputConservation" type="text" placeholder="Ex : À conserver au frais après ouverture.">
+      </div>
+
+      <div class="divider"></div>
+
+      <h2>Panier d’étiquettes</h2>
+      <small>Chaque ligne = un parfum. Le nombre = nombre d’étiquettes à imprimer.</small>
+
+      <div id="cartContainer" style="margin-top:10px;"></div>
+
+      <div class="btn-row">
+        <button class="btn danger" id="btnClearCart" type="button">Vider le panier</button>
+        <button class="btn" id="btnPrintAll" type="button">Imprimer les étiquettes</button>
+      </div>
+    </div>
+
+    <!-- COLONNE DROITE : APERÇU -->
+    <div class="card">
+      <h2>Aperçu de l’étiquette</h2>
+      <small>Prévisualisation basée sur la première ligne du panier.</small>
+
+      <div style="margin-top:10px;">
+        <div class="label-preview" id="previewLabel">
+          <div class="label-header">
+            <div class="label-header-left">
+              <div class="label-name" id="prevNom">Nom du produit</div>
+            </div>
+            <div class="label-header-center">
+              <div class="label-dlc-top" id="prevDLC">DLC : --/--/----</div>
+            </div>
+            <div class="label-header-right">
+              <div class="label-qty-top" id="prevPoids">1 L</div>
+            </div>
+          </div>
+
+          <div class="label-body">
+            <div class="label-section" id="prevIng">Ingrédients : …</div>
+            <div class="label-section" id="prevCons"></div>
+          </div>
+
+          <div id="prevBarcodeWrap" class="label-barcode-wrap" style="display:none;">
+            <svg id="prevBarcode" class="label-barcode"></svg>
+          </div>
+
+          <div class="label-footer" id="prevFooter">
+            Vanille &amp; Compagnie, 43B Rue Reine Elisabeth, 1480 Tubize
+          </div>
+        </div>
+
+        <p class="empty-hint" id="previewHint" style="margin-top:8px;">
+          Ajoutez des produits au panier pour voir un exemple d’étiquette.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ZONE IMPRESSION -->
+  <div class="print-label-only" style="display:none;">
+    <div id="printLabelsContainer"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    // ==========================
+    // CONFIG SUPABASE (À REMPLACER)
+    // ==========================
+    const SUPABASE_URL = "https://gpysazxtguhuelrwgwhk.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdweXNhenh0Z3VodWVscndnd2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0NjkyMzksImV4cCI6MjA4MjA0NTIzOX0.LtgX4K81vS_pBprPcQ5zMEtygg9V9jHHxx1f-w08kTM";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const BARCODE_MAP = {
+      "Vanille":"5419980668301",
+      "Chocolat":"5419980668318",
+      "Pistache":"5419980668332",
+      "Praliné":"5419980668325",
+      "Speculoos":"5419980668349",
+      "Stracciatella":"5419980668356",
+      "Fraise":"5419980668363",
+      "Citron":"5419980668370"
+    };
+
+    // ========= PRODUITS PAR DÉFAUT (TA LISTE) =========
+    const defaultProducts = [
+      // GLACES
+      { name: 'Fleur de lait', category: 'Glace', ingredients: 'LAIT, sucre, LAIT écrémé en poudre, dextrose, crème fraiche 40%, stabilisants (gomme de guar et farine de graines de caroube), alginate de sodium, arômes, émulsifiants (mono- et diglycérides d’acides gras), sel.' },
+      { name: 'Coco', category: 'Glace', ingredients: 'LAIT, sucre, LAIT écrémé en poudre, dextrose, crème fraiche 40%, stabilisants (gomme de guar et farine de graines de caroube), alginate de sodium, arômes, émulsifiants (mono- et diglycérides d’acides gras), poudre de NOIX DE COCO, sirop de glucose, eau, alcool, arômes de coco, sel.' },
+      { name: 'Chocolat blanc', category: 'Glace', ingredients: 'LAIT, sucre, LAIT écrémé en poudre, dextrose, crème fraiche 40%, stabilisants (gomme de guar et farine de graines de caroube), alginate de sodium, arômes, émulsifiants (mono- et diglycérides d’acides gras), CHOCOLAT BLANC (sucre, beurre de cacao, poudre de lait entier, émulsifiant lécithine de soja, arôme naturel de vanille), sel.' },
+      { name: 'Chocolat', category: 'Glace', ingredients: 'LAIT, sucre, lait écrémé en poudre, dextrose, crème fraiche 40%, stabilisants (gomme de guar et farine de graines de caroube), alginate de sodium, arômes, émulsifiants (mono- et diglycérides d’acides gras), CHOCOLAT (pâte de cacao, sucre, beurre de cacao, émulsifiant lécithines de soja, arôme naturel de vanille), poudre de cacao, régulateur d’acidité (carbonates et hydrates de potassium), sirop de sucre inverti, sel.' },
+      { name: 'Richard', category: 'Glace', ingredients: 'LAIT, sucre, lait écrémé en poudre, dextrose, crème fraiche 40%, stabilisants (gomme de guar et farine de graines de caroube), alginate de sodium, arômes, émulsifiants (mono- et diglycérides d’acides gras), NOISETTES, huile de graines de tournesol, cacao maigre, beurre de cacao, sirop de glucose, émulsifiant (lécithine de tournesol), arômes, sel.' },
+      { name: 'Moka', category: 'Glace', ingredients: 'LAIT, sucre, lait écrémé en poudre, dextrose, crème fraiche 40%, stabilisants (gomme de guar et farine de graines de caroube), alginate de sodium, arômes, émulsifiants (mono- et diglycérides d’acides gras), café, huile de graines de tournesol, cacao maigre, beurre de cacao, sirop de glucose, émulsifiant (lécithine de tournesol), arômes, sirop de sucre inverti, sel.' },
+      { name: 'Caramel', category: 'Glace', ingredients: 'LAIT, sucre, lait écrémé en poudre, dextrose, crème fraiche 40%, stabilisants (gomme de guar et farine de graines de caroube), alginate de sodium, arômes, émulsifiants (mono- et diglycérides d’acides gras), sel.' },
+      { name: 'Praliné', category: 'Glace', ingredients: 'LAIT, sucre, lait écrémé en poudre, dextrose, crème fraiche 40%, stabilisants (gomme de guar et farine de graines de caroube), alginate de sodium, arômes, émulsifiants (mono- et diglycérides d’acides gras), NOISETTES, sel.' },
+      { name: 'Speculoos', category: 'Glace', ingredients: 'LAIT, sucre, lait écrémé en poudre, dextrose, crème fraiche 40%, stabilisants (gomme de guar et farine de graines de caroube), alginate de sodium, arômes, émulsifiants (mono- et diglycérides d’acides gras), biscuits speculoos (farine de BLE, sucre, huiles végétales palme et colza, sirop de sucre candi, poudre à lever E500ii, sirop de sucre inverti, sel, cannelle).' },
+      { name: 'Cacahuètes', category: 'Glace', ingredients: 'LAIT, sucre, lait écrémé en poudre, dextrose, crème fraiche 40%, stabilisants (gomme de guar et farine de graines de caroube), alginate de sodium, arômes, émulsifiants (mono- et diglycérides d’acides gras), CACAHUETES, sirop de sucre inverti, sel.' },
+      { name: 'Pistache', category: 'Glace', ingredients: 'LAIT, sucre, lait écrémé en poudre, dextrose, crème fraiche 40%, stabilisants (gomme de guar et farine de graines de caroube), alginate de sodium, arômes, émulsifiants (mono- et diglycérides d’acides gras), PISTACHES, sirop de sucre inverti, sel.' },
+      { name: 'Vanille', category: 'Glace', ingredients: 'LAIT, sucre, LAIT écrémé en poudre, dextrose, crème fraiche 40%, stabilisants (gomme de guar et farine de graines de caroube), alginate de sodium, arômes, émulsifiants (mono- et diglycérides d’acides gras), sirop de glucose, extrait et gousses de VANILLE Bourbon de Madagascar (10 %), eau, arôme de vanille, colorants : curcumine – E160b(ii), sel.' },
+      { name: 'Banane', category: 'Glace', ingredients: 'LAIT, sucre, lait écrémé en poudre, dextrose, crème fraiche 40%, BANANES, sirop de citron, stabilisants (gomme de guar et farine de graines de caroube), alginate de sodium, arômes, émulsifiants (mono- et diglycérides d’acides gras), sel.' },
+      { name: 'Yaourt Cerises', category: 'Glace', ingredients: 'YAOURT entier, LAIT, sucre, lait écrémé en poudre, dextrose, CERISES confites (50 %) (cerises, sirop de glucose-fructose, saccharose), sirop de glucose, jus de griottes (11 %), acidifiant (acide citrique), colorant (anthocyanes), arômes, stabilisants (farine de graines de caroube, gomme de guar), émulsifiants (mono- et diglycérides d’acides gras), protéines de LAIT.' },
+      { name: 'Stracciatella', category: 'Glace', ingredients: 'LAIT, sucre, lait écrémé en poudre, dextrose, crème fraiche 40%, stabilisants (gomme de guar et farine de graines de caroube), alginate de sodium, arômes, émulsifiants (mono- et diglycérides d’acides gras), CHOCOLAT (pâte de cacao, sucre, beurre de cacao, émulsifiant lécithines de soja, arôme naturel de vanille), régulateur d’acidité (carbonates et hydrates de potassium), sel.' },
+      { name: 'Choco-menthe', category: 'Glace', ingredients: 'LAIT, sucre, lait écrémé en poudre, dextrose, crème fraiche 40%, stabilisants (gomme de guar et farine de graines de caroube), alginate de sodium, arômes, émulsifiants (mono- et diglycérides d’acides gras), CHOCOLAT (pâte de cacao, sucre, beurre de cacao, émulsifiant lécithines de soja, arôme naturel de vanille), menthe, régulateur d’acidité (carbonates et hydrates de potassium), sel.' },
+
+      // SORBETS
+      { name: 'Citron', category: 'Sorbet', ingredients: 'Eau, sucre, jus à base de concentrés : citron et orange, pulpe de citron, dextrose, stabilisants (farine de graines de caroube, gomme de guar), émulsifiants (mono- et diglycérides d’acides gras), acide citrique, maïzena, sirop de sucre inverti.' },
+      { name: 'Fraise', category: 'Sorbet', ingredients: 'Eau, sucre, fraises, dextrose, sirop de glucose, acidifiant (acide citrique, colorants), stabilisants (farine de graines de caroube, gomme de guar), émulsifiants (mono- et diglycérides d’acides gras), acide citrique, sirop de citron, sirop de sucre inverti.' },
+      { name: 'Framboise', category: 'Sorbet', ingredients: 'Eau, sucre, framboises, dextrose, stabilisants (farine de graines de caroube, gomme de guar), émulsifiants (mono- et diglycérides d’acides gras), acide citrique, sirop de citron, sirop de sucre inverti.' },
+      { name: 'Mangue', category: 'Sorbet', ingredients: 'Eau, sucre, mangues, dextrose, stabilisants (farine de graines de caroube, gomme de guar), émulsifiants (mono- et diglycérides d’acides gras), acide citrique, sirop de citron, sirop de sucre inverti.' }
+    ];
+
+    // ========= PRODUITS UTILISÉS PAR L'APP =========
+    let products = []; // vient de Supabase (hors hidden)
+    const cart = [];   // panier local (normal)
+
+    // ========= UI REALTIME INDICATOR =========
+    const rtState = document.getElementById("rtState");
+    function setRT(state){
+      rtState.textContent = state ? "ON" : "OFF";
+      rtState.className = state ? "ok" : "bad";
+    }
+    setRT(false);
+
+    // ========= OUTILS =========
+    function normalizeName(s) {
+      return (s || "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function formatDateDDMMYYYY(date) {
+      const d = String(date.getDate()).padStart(2, '0');
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const y = date.getFullYear();
+      return `${d}/${m}/${y}`;
+    }
+
+    function todayPlus4Months() {
+      const d = new Date();
+      d.setMonth(d.getMonth() + 4);
+      return formatDateDDMMYYYY(d);
+    }
+
+    function isTight(ingredients, cons) {
+      const len = (ingredients || '').length + (cons || '').length;
+      return len > 220;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function getBarcodeValue(productName) {
+      return BARCODE_MAP[productName] || "";
+    }
+
+    function renderBarcode(target, value) {
+      if (!target) return;
+      if (!value || typeof JsBarcode === "undefined") {
+        target.innerHTML = "";
+        return;
+      }
+
+      try {
+        JsBarcode(target, value, {
+          format: "EAN13",
+          displayValue: true,
+          fontSize: 9,
+          textMargin: 2,
+          margin: 0,
+          height: 36,
+          width: 1.6,
+          background: "#ffffff",
+          lineColor: "#000000"
+        });
+      } catch (_err) {
+        target.innerHTML = "";
+      }
+    }
+
+    function syncProductionOptions() {
+      const sel = document.getElementById("productionProduct");
+      if (!sel) return;
+
+      const current = sel.value;
+      sel.innerHTML = "";
+
+      if (products.length === 0) {
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = "Aucun produit";
+        sel.appendChild(opt);
+        return;
+      }
+
+      products.forEach(p => {
+        const o = document.createElement("option");
+        o.value = normalizeName(p.name);
+        o.textContent = `${p.name} (${p.category})`;
+        sel.appendChild(o);
+      });
+
+      if ([...sel.options].some(o => o.value === current)) sel.value = current;
+    }
+
+    function getSelectedProductionProduct() {
+      const key = document.getElementById("productionProduct").value;
+      return products.find(x => normalizeName(x.name) === key) || null;
+    }
+
+    function getCartKey(product) {
+      if (product.cartKey) return product.cartKey;
+      if (product.labelType === 'production') {
+        return `production::${product.name}::${product.productionSize || ''}`;
+      }
+      return product.name;
+    }
+
+    function getDisplayName(item) {
+      if (item.labelType === 'production') {
+        return `${item.name} [Production ${item.productionSize}]`;
+      }
+      return item.name;
+    }
+
+    // ========= SUPABASE : LOAD / SAVE =========
+    async function loadProductsFromDB() {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("category", { ascending: true })
+        .order("name", { ascending: true });
+
+      if (error) {
+        alert("Erreur chargement produits: " + error.message);
+        products = [];
+        return;
+      }
+
+      products = (data || [])
+        .filter(p => !p.hidden)
+        .map(p => ({ name: p.name, category: p.category, ingredients: p.ingredients }));
+
+      renderEditPick();
+      syncProductionOptions();
+    }
+
+    async function upsertProductToDB({ name, category, ingredients }) {
+      const { error } = await supabase
+        .from("products")
+        .upsert({
+          name,
+          category,
+          ingredients,
+          hidden: false,
+          updated_at: new Date().toISOString()
+        }, { onConflict: "name" });
+
+      if (error) throw error;
+    }
+
+    async function hideProductInDB(name) {
+      const { error } = await supabase
+        .from("products")
+        .update({ hidden: true, updated_at: new Date().toISOString() })
+        .eq("name", name);
+
+      if (error) throw error;
+    }
+
+    async function unhideAllInDB() {
+      const { error } = await supabase
+        .from("products")
+        .update({ hidden: false, updated_at: new Date().toISOString() })
+        .eq("hidden", true);
+
+      if (error) throw error;
+    }
+
+    async function importDefaults() {
+      const payload = defaultProducts.map(p => ({
+        name: p.name,
+        category: p.category,
+        ingredients: p.ingredients,
+        hidden: false,
+        updated_at: new Date().toISOString()
+      }));
+
+      const { error } = await supabase.from("products").upsert(payload, { onConflict: "name" });
+      if (error) throw error;
+    }
+
+    // ========= RENDER PRODUITS =========
+    function renderProducts() {
+      const container = document.getElementById('productList');
+      const filter = document.getElementById('filterCat').value;
+      container.innerHTML = '';
+
+      const list = products.filter(p => filter === 'Toutes' || p.category === filter);
+
+      if (list.length === 0) {
+        container.innerHTML = `<p class="empty-hint">Aucun produit dans cette catégorie.</p>`;
+        return;
+      }
+
+      list.forEach(p => {
+        const btn = document.createElement('button');
+        btn.className = 'product-btn';
+        btn.type = 'button';
+        btn.innerHTML = `
+          <span class="product-name">${escapeHtml(p.name)}</span>
+          <span class="product-cat">${escapeHtml(p.category)}</span>
+        `;
+        btn.onclick = () => addToCart(p);
+        container.appendChild(btn);
+      });
+    }
+
+    // ========= UI MODIF/SUPPRESSION =========
+    function renderEditPick() {
+      const sel = document.getElementById("editPick");
+      sel.innerHTML = "";
+
+      const optNew = document.createElement("option");
+      optNew.value = "";
+      optNew.textContent = "— Nouveau parfum (ajout) —";
+      sel.appendChild(optNew);
+
+      products.forEach(p => {
+        const o = document.createElement("option");
+        o.value = normalizeName(p.name);
+        o.textContent = `${p.name} (${p.category})`;
+        sel.appendChild(o);
+      });
+
+      loadPickedProductToForm(sel.value);
+    }
+
+    function loadPickedProductToForm(key) {
+      const cat = document.getElementById("editCat");
+      const name = document.getElementById("editName");
+      const ing = document.getElementById("editIng");
+
+      if (!key) {
+        cat.value = "Glace";
+        name.value = "";
+        ing.value = "";
+        return;
+      }
+
+      const p = products.find(x => normalizeName(x.name) === key);
+      if (!p) return;
+
+      cat.value = p.category;
+      name.value = p.name;
+      ing.value = p.ingredients;
+    }
+
+    async function handleSaveProduct() {
+      const pickKey = document.getElementById("editPick").value;
+      const cat = document.getElementById("editCat").value.trim();
+      const name = document.getElementById("editName").value.trim();
+      const ing  = document.getElementById("editIng").value.trim();
+
+      if (!cat || !name || !ing) {
+        alert("Veuillez remplir : catégorie + nom + ingrédients.");
+        return;
+      }
+
+      try {
+        await upsertProductToDB({ name, category: cat, ingredients: ing });
+        alert(pickKey ? "Parfum modifié ✅" : "Parfum ajouté ✅");
+      } catch (e) {
+        alert("Erreur sauvegarde: " + (e?.message || e));
+      }
+    }
+
+    async function handleDeleteOne() {
+      const pickKey = document.getElementById("editPick").value;
+      if (!pickKey) {
+        alert("Choisis d’abord un parfum à supprimer.");
+        return;
+      }
+
+      const p = products.find(x => normalizeName(x.name) === pickKey);
+      if (!p) return;
+
+      const ok = confirm("Supprimer ce parfum ? (Il sera masqué, réversible via “Réafficher…”.)");
+      if (!ok) return;
+
+      try {
+        await hideProductInDB(p.name);
+
+        const inCartIdx = cart.findIndex(c => normalizeName(c.name) === pickKey);
+        if (inCartIdx >= 0) cart.splice(inCartIdx, 1);
+
+        alert("Parfum supprimé (masqué) ✅");
+      } catch (e) {
+        alert("Erreur suppression: " + (e?.message || e));
+      }
+    }
+
+    async function handleUnhideAll() {
+      const ok = confirm("Réafficher TOUS les parfums masqués ?");
+      if (!ok) return;
+
+      try {
+        await unhideAllInDB();
+        alert("Parfums masqués réaffichés ✅");
+      } catch (e) {
+        alert("Erreur réaffichage: " + (e?.message || e));
+      }
+    }
+
+    // ========= PANIER =========
+    function addToCart(product) {
+      const cartKey = getCartKey(product);
+      const existing = cart.find(item => item.cartKey === cartKey);
+      if (existing) existing.qty += 1;
+      else cart.push({ ...product, cartKey, qty: 1 });
+
+      renderCart();
+      updatePreviewLabel();
+    }
+
+    function handleAddProduction() {
+      const product = getSelectedProductionProduct();
+      if (!product) {
+        alert("Choisissez un produit pour la production.");
+        return;
+      }
+
+      const weight = document.getElementById("productionSize").value;
+      addToCart({
+        ...product,
+        labelType: 'production',
+        productionSize: weight,
+        productionDate: formatDateDDMMYYYY(new Date()),
+        cartKey: `production::${product.name}::${weight}`
+      });
+    }
+
+    // Exposer pour les onclick générés
+    window.changeQty = function(name, delta) {
+      const item = cart.find(c => c.cartKey === name);
+      if (!item) return;
+      item.qty += delta;
+      if (item.qty <= 0) cart.splice(cart.indexOf(item), 1);
+      renderCart();
+      updatePreviewLabel();
+    };
+
+    window.setQty = function(name, value) {
+      const n = parseInt(value, 10);
+      const item = cart.find(c => c.cartKey === name);
+      if (!item) return;
+
+      if (isNaN(n) || n <= 0) cart.splice(cart.indexOf(item), 1);
+      else item.qty = n;
+
+      renderCart();
+      updatePreviewLabel();
+    };
+
+    window.removeFromCart = function(name) {
+      const idx = cart.findIndex(c => c.cartKey === name);
+      if (idx >= 0) cart.splice(idx, 1);
+      renderCart();
+      updatePreviewLabel();
+    };
+
+    function clearCart() {
+      cart.splice(0, cart.length);
+      renderCart();
+      updatePreviewLabel();
+    }
+
+    function renderCart() {
+      const container = document.getElementById('cartContainer');
+      if (cart.length === 0) {
+        container.innerHTML = '<p class="empty-hint">Panier vide. Touchez un parfum à gauche pour commencer.</p>';
+        return;
+      }
+
+      let html = '<table class="cart-table"><thead><tr><th>Produit</th><th>Cat.</th><th>Qté</th><th></th></tr></thead><tbody>';
+      cart.forEach(item => {
+        const safeName = item.cartKey.replace(/'/g, "\\'");
+        html += `
+          <tr>
+            <td>${escapeHtml(getDisplayName(item))}</td>
+            <td>${escapeHtml(item.labelType === 'production' ? 'Production' : item.category)}</td>
+            <td class="qty-cell">
+              <button class="qty-btn" onclick="changeQty('${safeName}', -1)">-</button>
+              <input class="qty-input" type="number" min="0" value="${item.qty}"
+                     onchange="setQty('${safeName}', this.value)">
+              <button class="qty-btn" onclick="changeQty('${safeName}', 1)">+</button>
+            </td>
+            <td><button class="qty-btn" onclick="removeFromCart('${safeName}')">X</button></td>
+          </tr>
+        `;
+      });
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    function getCommonFields() {
+      const poids = document.getElementById('inputPoids').value.trim();
+      const dlc = document.getElementById('inputDLC').value.trim() || '--/--/----';
+      const cons = document.getElementById('inputConservation').value.trim();
+      return { poids, dlc, cons };
+    }
+
+    function updatePreviewLabel() {
+      const prevLabel = document.getElementById('previewLabel');
+      const prevNom = document.getElementById('prevNom');
+      const prevIng = document.getElementById('prevIng');
+      const prevCons = document.getElementById('prevCons');
+      const prevPoids = document.getElementById('prevPoids');
+      const prevDLC = document.getElementById('prevDLC');
+      const prevBarcodeWrap = document.getElementById('prevBarcodeWrap');
+      const prevBarcode = document.getElementById('prevBarcode');
+      const prevFooter = document.getElementById('prevFooter');
+      const hint = document.getElementById('previewHint');
+
+      if (cart.length === 0) {
+        prevLabel.classList.remove('tight');
+        prevNom.textContent = 'Nom du produit';
+        prevIng.textContent = 'Ingrédients : …';
+        prevCons.textContent = '';
+        prevPoids.textContent = '1 L';
+        prevDLC.textContent = 'DLC : --/--/----';
+        prevBarcodeWrap.style.display = 'none';
+        prevBarcode.innerHTML = '';
+        prevFooter.style.display = 'block';
+        hint.style.display = 'block';
+        return;
+      }
+
+      hint.style.display = 'none';
+      const first = cart[0];
+      const { poids, dlc, cons } = getCommonFields();
+      const barcode = getBarcodeValue(first.name);
+      prevNom.textContent = first.name;
+
+      if (first.labelType === 'production') {
+        prevLabel.classList.add('production-label');
+        prevLabel.classList.remove('tight');
+        prevIng.textContent = first.name;
+        prevCons.textContent = '';
+        prevPoids.textContent = first.productionSize || '1 L';
+        prevDLC.textContent = 'Production : ' + (first.productionDate || formatDateDDMMYYYY(new Date()));
+        prevBarcodeWrap.style.display = 'none';
+        prevBarcode.innerHTML = '';
+        prevFooter.style.display = 'none';
+      } else {
+        prevLabel.classList.remove('production-label');
+        prevIng.textContent = 'Ingrédients : ' + first.ingredients;
+        prevCons.textContent = cons || '';
+        prevPoids.textContent = poids || '1 L';
+        prevDLC.textContent = 'DLC : ' + dlc;
+        prevFooter.style.display = 'block';
+
+        if (barcode) {
+          prevBarcodeWrap.style.display = 'flex';
+          renderBarcode(prevBarcode, barcode);
+        } else {
+          prevBarcodeWrap.style.display = 'none';
+          prevBarcode.innerHTML = '';
+        }
+
+        if (isTight(first.ingredients, cons)) prevLabel.classList.add('tight');
+        else prevLabel.classList.remove('tight');
+      }
+    }
+
+    // ========= IMPRESSION =========
+    function buildPrintLabels() {
+      const container = document.getElementById('printLabelsContainer');
+      container.innerHTML = '';
+      if (cart.length === 0) return;
+
+      const { poids, dlc, cons } = getCommonFields();
+
+      cart.forEach(item => {
+        const tight = item.labelType === 'production' ? false : isTight(item.ingredients, cons);
+        const barcode = getBarcodeValue(item.name);
+        for (let i = 0; i < item.qty; i++) {
+          const wrap = document.createElement('div');
+          wrap.className = 'label-preview' + (tight ? ' tight' : '');
+          if (item.labelType === 'production') {
+            wrap.className += ' production-label';
+            wrap.innerHTML = `
+              <div class="label-header">
+                <div class="label-header-left">
+                  <div></div>
+                </div>
+                <div class="label-header-center">
+                  <div class="label-dlc-top">Production : ${escapeHtml(item.productionDate || formatDateDDMMYYYY(new Date()))}</div>
+                </div>
+                <div class="label-header-right">
+                  <div class="label-qty-top">${escapeHtml(item.productionSize || '1 L')}</div>
+                </div>
+              </div>
+              <div class="label-body">
+                <div class="label-name">${escapeHtml(item.name)}</div>
+              </div>
+            `;
+          } else {
+            wrap.innerHTML = `
+              <div class="label-header">
+                <div class="label-header-left">
+                  <div class="label-name">${escapeHtml(item.name)}</div>
+                </div>
+                <div class="label-header-center">
+                  <div class="label-dlc-top">DLC : ${escapeHtml(dlc || '--/--/----')}</div>
+                </div>
+                <div class="label-header-right">
+                  <div class="label-qty-top">${escapeHtml(poids || '1 L')}</div>
+                </div>
+              </div>
+              <div class="label-body">
+                <div class="label-section">Ingrédients : ${escapeHtml(item.ingredients)}</div>
+                ${cons ? `<div class="label-section">${escapeHtml(cons)}</div>` : ''}
+              </div>
+              ${barcode ? '<div class="label-barcode-wrap"><svg class="label-barcode" data-barcode="' + escapeHtml(barcode) + '"></svg></div>' : ''}
+              <div class="label-footer">
+                Vanille &amp; Compagnie, 43B Rue Reine Elisabeth, 1480 Tubize
+              </div>
+            `;
+          }
+          container.appendChild(wrap);
+        }
+      });
+
+      container.querySelectorAll('[data-barcode]').forEach(node => {
+        renderBarcode(node, node.getAttribute('data-barcode'));
+      });
+    }
+
+    function handlePrintAll() {
+      if (cart.length === 0) {
+        alert('Panier vide. Ajoutez au moins un produit.');
+        return;
+      }
+      buildPrintLabels();
+      updatePreviewLabel();
+      window.print();
+    }
+
+    // ========= FORMAT =========
+    function updateFormatClass() {
+      const format = document.getElementById('labelFormat').value;
+      document.body.classList.remove('format-90', 'format-62', 'format-29');
+      if (format === '62') document.body.classList.add('format-62');
+      else if (format === '29') document.body.classList.add('format-29');
+      else document.body.classList.add('format-90');
+    }
+
+    // ========= REALTIME =========
+    function setupRealtime() {
+      supabase.channel("rt-products")
+        .on("postgres_changes", { event: "*", schema: "public", table: "products" }, async () => {
+          await loadProductsFromDB();
+          renderProducts();
+          renderCart();
+          updatePreviewLabel();
+        })
+        .subscribe((status) => {
+          setRT(status === "SUBSCRIBED");
+        });
+    }
+
+    // ========= INIT =========
+    document.getElementById('filterCat').addEventListener('change', renderProducts);
+    document.getElementById('btnClearCart').addEventListener('click', clearCart);
+    document.getElementById('btnPrintAll').addEventListener('click', handlePrintAll);
+    document.getElementById('btnAddProduction').addEventListener('click', handleAddProduction);
+
+    document.getElementById('btnResetDLC').addEventListener('click', () => {
+      document.getElementById('inputDLC').value = todayPlus4Months();
+      updatePreviewLabel();
+    });
+
+    document.getElementById('labelFormat').addEventListener('change', updateFormatClass);
+
+    ['inputPoids', 'inputDLC', 'inputConservation'].forEach(id => {
+      document.getElementById(id).addEventListener('input', updatePreviewLabel);
+    });
+
+    document.getElementById("editPick").addEventListener("change", (e) => {
+      loadPickedProductToForm(e.target.value);
+    });
+
+    document.getElementById("btnSaveProduct").addEventListener("click", handleSaveProduct);
+    document.getElementById("btnDeleteOne").addEventListener("click", handleDeleteOne);
+    document.getElementById("btnUnhideAll").addEventListener("click", handleUnhideAll);
+
+    document.getElementById("btnImportDefaults").addEventListener("click", async () => {
+      const ok = confirm("Importer/mettre à jour les parfums par défaut dans Supabase ?");
+      if (!ok) return;
+      try {
+        await importDefaults();
+        alert("Import terminé ✅");
+      } catch (e) {
+        alert("Erreur import: " + (e?.message || e));
+      }
+    });
+
+    document.getElementById('inputPoids').value = '1 L';
+    document.getElementById('inputDLC').value = todayPlus4Months();
+
+    updateFormatClass();
+    await loadProductsFromDB();
+    renderProducts();
+    renderCart();
+    updatePreviewLabel();
+    setupRealtime();
+  </script>
+</body>
+</html>
